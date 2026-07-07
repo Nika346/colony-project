@@ -165,7 +165,6 @@ public:
     bool storeResource(ResourceType type, double amount);
     bool withdrawResource(ResourceType type, double amount);
     double getStoredAmount(ResourceType type) const;
-    void setCapacity(ResourceType type, double capacity); //у тебя была инициализирована но не объявлена эта функция
 };
 // 8. Медицинский модуль
 class MedicalModule : public ColonyModule {
