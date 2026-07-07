@@ -1,0 +1,3 @@
+C:/Users/Вероника/OneDrive/Рабочий стол/колония/cmake-build-debug/CMakeFiles/MyProgram.dir
+C:/Users/Вероника/OneDrive/Рабочий стол/колония/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Вероника/OneDrive/Рабочий стол/колония/cmake-build-debug/CMakeFiles/rebuild_cache.dir
