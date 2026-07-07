@@ -150,9 +150,6 @@ double Storage::getStoredAmount(ResourceType type) const {
     auto it = currentStorage.find(type);
     return (it != currentStorage.end()) ? it->second : 0.0;
 }
-void Storage::setCapacity(ResourceType type, double capacity) {
-    storageCapacity[type] = capacity;
-}
 
 
 
