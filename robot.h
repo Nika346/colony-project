@@ -6,6 +6,7 @@
 #pragma once
 #include "enum_col_rob.h"
 #include "modules.h"
+#include "Weather.h"
 #include <iostream>
 #include <string>
 using namespace std;
@@ -60,6 +61,8 @@ public:
     int get_time_to_complete() const { return time_to_complete_task; }
     double get_efficiency() const { return efficiency; }
     double get_wear_level() const { return wear_level; }
+    double get_now_speed(const Weather& weather) const; // эта функция вычисляет реальную скорость с учетом погоды
+    int time_move(double distans, const Weather& weather) const; // для вычисления времени с учетом погоды
     // СЕТТЕРЫ
     void set_module(ColonyModule* mod) { current_module = mod; }
     void set_state(Robot_state new_state) { state = new_state; }
@@ -106,6 +109,7 @@ public:
      * return true, если может перемещаться
      */
     bool can_move() const;
+    bool can_move(const Weather& weather) const; // для учета погоды
     /*
      * Получение текущего заряда в процентах
      */
