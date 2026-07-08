@@ -8,7 +8,11 @@
 #include "modules.h"
 #include <map>
 #include <string>
-
+struct ResourcesAvailability {
+        bool oxygen_ok;
+        bool water_ok;
+        bool food_ok;
+};
 
 class Resource {
 private:
@@ -60,6 +64,7 @@ public:
         ColonyResourceManager();
         void initializeResources();
         Resource& get_resource(ResourceType type){return resources[type];} // мне нужна эта строчка для получения ресурсов
+        ResourcesAvailability checkAndConsumeForGroup(double oxygenNeeded, double waterNeeded, double foodNeeded);
 };
 
 
