@@ -46,6 +46,7 @@ private:
     Resources_consumption resources_consumption;
     // Может ли группа работать (зависит от здоровья и усталости)
     bool opportunity_to_work;
+    Resources_consumption consumptionRatePerPerson;
 
 public:
      // Конструктор группы колонистов
@@ -74,6 +75,7 @@ public:
     Colonist_state get_state() const { return state; }
     bool get_opportunity_to_work() const { return opportunity_to_work; }
     Resources_consumption get_consumption() const { return resources_consumption; }
+    Resources_consumption getConsumptionRate() const { return consumptionRatePerPerson; }
 
     // СЕТТЕРЫ
     void set_group_id(string group_i) { group_id = group_i; }
@@ -91,7 +93,7 @@ public:
      //water_available - достаточно ли воды
      //food_available - достаточно ли пищи
      //return количество погибших колонистов (если здоровье упало до 0)
-    int update_health(bool oxygen_available, bool water_available, bool food_available);
+     int update_health(const ResourcesAvailability& availability);
 
      //Метод для обновления уровня усталости
      //Усталость растет при работе и снижается во время отдыха

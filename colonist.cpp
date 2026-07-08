@@ -21,7 +21,8 @@ ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int
       current_task(current_task),
       current_module(current_module),
       resources_consumption(consumption),
-      opportunity_to_work(true)  // Изначально могут работать
+      opportunity_to_work(true),  // Изначально могут работать
+      consumptionRatePerPerson(consumption)
 {
     // Если колонистов нет, состояние - погибшие
     if (count <= 0) {
@@ -34,50 +35,42 @@ ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int
  * Проверяет доступность ресурсов и уровень усталости.
  * Возвращает количество погибших (если здоровье упало до 0).
  */
-int ColonistGroup::update_health(bool oxygen_available, bool water_available, bool food_available) {
-    // Если группа уже мертва, ничего не делаем
-    if (state == STATE_DEAD || count <= 0) {
-        return 0;
-    }
-    // Коэффициент ухудшения здоровья из-за недостатка ресурсов
+int ColonistGroup::update_health(const ResourcesAvailability& availability) {
+    if (state == STATE_DEAD || count <= 0) return 0;
     double health_penalty = 0.0;
-    // Проверяем каждый ресурс
-    if (!oxygen_available) {
-        health_penalty += 1.5;  // Нехватка кислорода сильно влияет
-        cout << "Предупреждение: Нехватка кислорода в группе " << group_id << "!" << endl;
+    // Кислород
+    if (!availability.oxygen_ok) {
+        health_penalty += 1.5;
+        cout << "КРИТИЧЕСКИ: Нехватка кислорода в группе " << group_id << "!" << endl;
     }
-    if (!water_available) {
+    // Вода
+    if (!availability.water_ok) {
         health_penalty += 1.0;
-        cout << "Предупреждение: Нехватка воды в группе " << group_id << "!" << endl;
+        cout << "КРИТИЧЕСКИ: Нехватка воды в группе " << group_id << "!" << endl;
     }
-    if (!food_available) {
+    // Еда
+    if (!availability.food_ok) {
         health_penalty += 0.8;
-        cout << "Предупреждение: Нехватка пищи в группе " << group_id << "!" << endl;
+        cout << "КРИТИЧЕСКИ: Нехватка пищи в группе " << group_id << "!" << endl;
     }
-    // Усталость тоже влияет на здоровье
-    if (fatigue > 80) {
-        health_penalty += 0.5;  // Сильная усталость ухудшает здоровье
-    }
-    // Применяем ухудшение здоровья
+    if (fatigue > 80) health_penalty += 0.5;
     if (health_penalty > 0) {
         health = max(0.0, health - health_penalty);
-        // Если здоровье упало до 0 - колонисты умирают
         if (health == 0) {
-            int dead = count;  // Все колонисты в группе умирают
+            int dead = count;
             state = STATE_DEAD;
             opportunity_to_work = false;
             count = 0;
-            cout << "Группа колонистов " << group_id << " погибла от нехватки ресурсов!" << endl;
+            cout << "Группа колонистов " << group_id << " погибла!" << endl;
             return dead;
         }
     }
-    // Если здоровье ниже 30%, колонисты не могут работать
     if (health < 30) {
         opportunity_to_work = false;
     } else {
         opportunity_to_work = true;
     }
-    return 0;  // Погибших нет
+    return 0; // Погибших нет
 }
 /*
  * Обновление уровня усталости.

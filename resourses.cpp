@@ -116,3 +116,10 @@ void ColonyResourceManager::initializeResources() {
         1000.0, 0.0, 0.0
     );
 }
+ResourcesAvailability ColonyResourceManager::checkAndConsumeForGroup(double oxygenNeeded, double waterNeeded, double foodNeeded) {
+    ResourcesAvailability result;
+    result.oxygen_ok = resources[ResourceType::OXYGEN].consume(oxygenNeeded);
+    result.water_ok = resources[ResourceType::WATER].consume(waterNeeded);
+    result.food_ok = resources[ResourceType::FOOD].consume(foodNeeded);
+    return result;
+}
