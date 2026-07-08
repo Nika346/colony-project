@@ -1,6 +1,8 @@
 // Created by Вероника on 06.07.2026.
 #include "robot.h"
 #include <algorithm>  // для std::max, std::min
+#include <cmath>
+#include <climits>
 using namespace std;
 /*
  * Конструктор робота
