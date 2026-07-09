@@ -51,6 +51,16 @@ bool Robot::assign_task(Task_type task, int duration) {
         cout << "Робот " << id << " слишком мало заряда для работы" << endl;
         return false;
     }
+    // проверка погоды
+    if (task == TASK_REPAIR || task == TASK_EMERGENCY || task == TASK_CARGO || task == TASK_CONSTRUCTION || task == TASK_MINING || task == TASK_EXPLORATION) {
+        if (weather.get_speed() <= 0.0) {
+            cout << "Робот " << id << " не может двигаться из-за погоды (скорость = 0)" << endl;
+            return false;
+        }
+        if (weather.get_speed() < 0.3) {
+            cout << "Предупреждение: погода сильно замедляет робота " << id << endl;
+        }
+    }
     // Назначаем задачу
     current_task = task;
     time_to_complete_task = duration;
