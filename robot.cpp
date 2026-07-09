@@ -35,7 +35,7 @@ Robot::Robot(int id, Robot_type type, ColonyModule* current_module,
  * Назначение задачи роботу
  * Проверяет, может ли робот выполнить задачу, и назначает её
  */
-bool Robot::assign_task(Task_type task, int duration) {
+bool Robot::assign_task(Task_type task, int duration, const Weather& weather) {
     // Проверяем, может ли робот выполнять такую задачу
     if (!can_perform_task(task)) {
         cout << "Робот " << id << " не может выполнять задачу "
