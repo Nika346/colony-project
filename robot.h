@@ -74,7 +74,7 @@ public:
      * duration - продолжительность в шагах симуляции
      * true, если задача назначена успешно
      */
-    bool assign_task(Task_type task, int duration);
+    bool assign_task(Task_type task, int duration, const Weather& weather); // с учетом погоды
     /*
      * Обновление состояния робота (вызывается каждый шаг симуляции)
      * Обновляет заряд энергии, износ и прогресс выполнения задачи
