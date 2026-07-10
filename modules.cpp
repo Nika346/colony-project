@@ -1,7 +1,8 @@
 //
 // Created by Вероника on 06.07.2026.
 //
-#include "modules.h"
+#include "Modules.h"
+#include "robot.h"
 #include <iostream>
 using namespace std;
 ColonyModule::ColonyModule(int id, string name, ModuleType type,
@@ -182,4 +183,11 @@ int RepairBay::repairRobot() {
     return repairSpeed;  // Возвращаем, сколько здоровья восстановили
 }
 
+// ремонтный
+RepairBay::RepairBay(int id, string name, int maxRobots)
+    : ColonyModule(id, name, ModuleType::REPAIR_BAY, 80, 8),
+      maxRobots(maxRobots), effective_remont(1.0f), spare_part(10) {
+    setConsumption(ResourceType::ENERGY, 5.0);
+    setConsumption(ResourceType::BUILDING_MATERIALS, 2.0);
+}
 
