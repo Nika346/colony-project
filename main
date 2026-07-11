@@ -1,0 +1,13 @@
+#include "Colony.h"
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Симулятор колонии на другой планете"<<endl;
+    Colony colony;
+    cout << "Готово к дальнейшему развитию симуляции!"<<endl;
+    return 0;
+}
+
+
+
