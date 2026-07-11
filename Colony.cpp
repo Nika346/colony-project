@@ -7,20 +7,34 @@ using namespace std;
 
 // ==================== Colony ====================
 Colony::Colony() : rng(42) {
-    //здесь все запросы и вызовы
+    createModules();
+    int n;
+    cout<<"Введите количество транспортных путей: "<<endl;
+    cin>>n;
+    createTransportNetwork(n);
+    cout<<"Колония успешно создана!"<<endl;
 }
-void Colony::createModules(
-    int habitatCount,
-    int greenhouseCount,
-    int solarCount,
-    int nuclearCount,
-    int mineCount,
-    int waterRecyclerCount,
-    int storageCount,
-    int medicalCount,
-    int repairBayCount) {
+void Colony::createModules(){
+    int habitatCount, greenhouseCount, solarCount, nuclearCount, mineCount, waterRecyclerCount, storageCount, medicalCount, repairBayCount;
     int currentId = 0;
-
+    cout<<"Введите количество Жилых модулей: "<<endl;
+    cin>>habitatCount;
+    cout<<"Введите количество Теплиц: "<<endl;
+    cin>>greenhouseCount;
+    cout<<"Введите количество Солнечных электростанций: "<<endl;
+    cin>>solarCount;
+    cout<<"Введите количество Атомных электростанций: "<<endl;
+    cin>>nuclearCount;
+    cout<<"Введите количество Шахт: "<<endl;
+    cin>>mineCount;
+    cout<<"Введите количество Систем очистки воды: "<<endl;
+    cin>>waterRecyclerCount;
+    cout<<"Введите количество Складов: "<<endl;
+    cin>>storageCount;
+    cout<<"Введите количество Медицинских модулей: "<<endl;
+    cin>>medicalCount;
+    cout<<"Введите количество Ремонтных цехов: "<<endl;
+    cin>>repairBayCount;
     for (int i = 0; i < habitatCount; i++) {
         modules.push_back(make_shared<HabitatModule>(
             currentId++, "Жилой " + to_string(i+1), 10));
@@ -31,11 +45,11 @@ void Colony::createModules(
     }
     for (int i = 0; i < solarCount; i++) {
         modules.push_back(make_shared<SolarPowerPlant>(
-            currentId++, "Солнечная панель " + to_string(i+1)));
+            currentId++, "Солнечная электростанция " + to_string(i+1)));
     }
     for (int i = 0; i < nuclearCount; i++) {
         modules.push_back(make_shared<NuclearPowerPlant>(
-            currentId++, "Ядерный реактор " + to_string(i+1)));
+            currentId++, "Атомная электростанция" + to_string(i+1)));
     }
     for (int i = 0; i < mineCount; i++) {
         modules.push_back(make_shared<Mine>(
@@ -43,7 +57,7 @@ void Colony::createModules(
     }
     for (int i = 0; i < waterRecyclerCount; i++) {
         modules.push_back(make_shared<WaterRecycler>(
-            currentId++, "Очистка воды " + to_string(i+1)));
+            currentId++, "Система очистки воды " + to_string(i+1)));
     }
     for (int i = 0; i < storageCount; i++) {
         modules.push_back(make_shared<Storage>(
