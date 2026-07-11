@@ -61,6 +61,7 @@ protected:
     // Потребление и производство ресурсов (ключ - тип ресурса, значение - количество)
     map<ResourceType, double> consumptionRate;
     map<ResourceType, double> productionRate;
+    vector<shared_ptr<ColonyModule>> ModulesRoutes;
 public:
     ColonyModule(int id, string name, ModuleType type,
                  int maxHealth, int importance);
