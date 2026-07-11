@@ -60,7 +60,7 @@ void Colony::createModules(
     cout << "Создано модулей: " << currentId << "\n";
 }
 void Colony::createTransportNetwork(int totalRoutes) {
-    uniform_real_distribution<double> lengthDist(10.0, 100.0); // Генерируем случайную длину (10-100 метров)           вынесла сюда из-за того что они были не в области видемости
+    uniform_real_distribution<double> lengthDist(10.0, 100.0); // Генерируем случайную длину (10-100 метров)
     uniform_int_distribution<int> capacityDist(5, 20);
 
     int minRoutes = modules.size() - 1;
@@ -72,11 +72,11 @@ void Colony::createTransportNetwork(int totalRoutes) {
     // Этап 1: Создаём основную цепочку
     // Создаём массив индексов модулей
     vector<int> moduleIndices;
-    for (size_t i = 0; i < modules.size(); i++) {   // разные типы были, выдавал предупреждения
+    for (size_t i = 0; i < modules.size(); i++) {   
         moduleIndices.push_back(i);
     }
     shuffle(moduleIndices.begin(), moduleIndices.end(), rng); // Перемешиваем
-    for (size_t i = 0; i < moduleIndices.size() - 1; i++) {    // разные типы были, выдавал предупреждения
+    for (size_t i = 0; i < moduleIndices.size() - 1; i++) {    
         int j1 = moduleIndices[i];
         int j2 = moduleIndices[i + 1];
         double length = lengthDist(rng);
@@ -87,8 +87,8 @@ void Colony::createTransportNetwork(int totalRoutes) {
         route->setUsableByRobots(true);
         route->setUsableByColonists(true);
         routes.push_back(route); // добавляем в список путей
-        //modules[j1]->ModulesRoutes.push_back(modules[j2]); //добавляем указатели на соседние модули       строки выдают ошибку, а я не сооброзила что кокрентно ты имеешь в виду
-        //modules[j2]->ModulesRoutes.push_back(modules[j1]);
+        modules[j1]->ModulesRoutes.push_back(modules[j2]); //добавляем указатели на соседние модули     
+        modules[j2]->ModulesRoutes.push_back(modules[j1]);
 
     }
     // Этап 2: Добавляем случайные дополнительные пути
@@ -99,10 +99,10 @@ void Colony::createTransportNetwork(int totalRoutes) {
             int module1 = index(rng);
             int module2 = index(rng);
             //пока модуль с индексом module2 есть в списке соседних модулей модуля module1, мы меняем его индекс
-            //while(find(modules[module1]->ModulesRoutes.begin(),modules[module1]->ModulesRoutes.end(),
-            //modules[module2])!=modules[module1]->ModulesRoutes.end()){
-            //    module2 = index(rng);
-            //}
+            while(find(modules[module1]->ModulesRoutes.begin(),modules[module1]->ModulesRoutes.end(),
+            modules[module2])!=modules[module1]->ModulesRoutes.end()){
+                module2 = index(rng);
+            }
         double length = lengthDist(rng);
         auto route = make_shared<TransportRoute>(
             routes.size(), modules[module1].get(), modules[module2].get(), length);
@@ -112,8 +112,8 @@ void Colony::createTransportNetwork(int totalRoutes) {
         route->setUsableByRobots(true);
         route->setUsableByColonists(true);
         routes.push_back(route);
-        //modules[module1]->ModulesRoutes.push_back(modules[module2]);
-        //modules[module2]->ModulesRoutes.push_back(modules[module1]);
+        modules[module1]->ModulesRoutes.push_back(modules[module2]);
+        modules[module2]->ModulesRoutes.push_back(modules[module1]);
         }
     }
 
