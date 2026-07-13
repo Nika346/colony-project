@@ -9,7 +9,7 @@ void PriorityTaskQueue::addTask(const Task& task) {
 Task PriorityTaskQueue::getHighestPriority() {
     if (pq.empty()) {
         cout << "Приоритетная очередь задач пуста!";
-        return;
+        return Task();          // нужно вернуть
     }
     Task top = pq.top(); //указатель на задачу с наибольшим приоритетом
     pq.pop(); //удаляем первый элемент, те top
@@ -31,10 +31,14 @@ size_t PriorityTaskQueue::size() const {
     return pq.size();
 }
 
-void PriorityTaskQueue::printAll() const {
-    cout << "В очереди задач: " << pq.size() << endl;
+bool PriorityTaskQueue::peek(Task& out) const {
+    if (pq.empty()) {
+        cout << "Приоритетная очередь задач пуста!";
+        return false;
+    }
+    out = pq.top();
+    return true;
 }
-
 
 
 
