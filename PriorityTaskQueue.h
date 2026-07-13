@@ -18,7 +18,7 @@ private:
 public:
     void addTask(const Task& task);
     Task getHighestPriority();     // извлечь самую важную задачу
-    const Task& peek() const;      // посмотреть самую важную, не удаляя
+    bool peek(Task& out) const;      // посмотреть самую важную, не удаляя    исправила сигнатуру, потому что функция не может возвращать пустоту
     bool isEmpty() const;
     size_t size() const;
     void printAll() const;         // для отладки
