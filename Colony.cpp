@@ -134,6 +134,150 @@ void Colony::createTransportNetwork(int totalRoutes) {
     cout << "\nВсего создано путей: " << routes.size() << "\n";
 }
 
+// доп задания 12,13,14
+void Colony::save(const string& file_name) const{
+    ofstream out(file_name);
+    if (!out){
+        cerr << "Ошибка открытия файла!";
+        return;
+    }
+    out << modules.size() << endl;
+    for (const auto& mod : modules) {
+        out << mod->getId() << " " << static_cast<int>(mod->getType()) << " " << mod->getCurrentHealth() << " " << mod->getMaxHealth() << " " << mod->getImportanceLevel() << " " << static_cast<int>(mod->getState()) << " " << mod->getName() << endl;
+    }
+    out << routes.size() << endl;
+    for (const auto& route : routes) {
+        out << route->getId() << " " << route->getStartModule()->getId() << " " << route->getEndModule()->getId() << " " << route->getLength() << " " << static_cast<int>(route->getState()) << " " << route->getCurrentHealth() << " " << route->getMaxHealth() << endl;
+    }
+    out.close();
+    cout << "Сценарий сохранён в " << file_name << endl;
+}
+
+void Colony::download(const string& file_name){
+    ifstream in(file_name);
+    if (!in) {
+        cerr << "Ошибка открытия файла!" << endl;
+        return;
+    }
+    modules.clear();
+    routes.clear();
+    size_t module_count;
+    in >> module_count;
+    for (size_t i = 0; i < module_count; ++i) {
+        int id, typeInt, health, maxHealth, importance, stateInt;
+        string name;
+        in >> id >> typeInt >> health >> maxHealth >> importance >> stateInt;
+        getline(in, name);
+        ModuleType type = static_cast<ModuleType>(typeInt);
+        shared_ptr<ColonyModule> mod;
+        switch (type) {
+            case ModuleType::HABITAT:
+                mod = make_shared<HabitatModule>(id, name, 10);
+                break;
+            case ModuleType::GREENHOUSE:
+                mod = make_shared<Greenhouse>(id, name);
+                break;
+            case ModuleType::SOLAR_POWER:
+                mod = make_shared<SolarPowerPlant>(id, name);
+                break;
+            case ModuleType::NUCLEAR_POWER:
+                mod = make_shared<NuclearPowerPlant>(id, name);
+                break;
+            case ModuleType::MINE:
+                mod = make_shared<Mine>(id, name);
+                break;
+            case ModuleType::WATER_RECYCLER:
+                mod = make_shared<WaterRecycler>(id, name);
+                break;
+            case ModuleType::STORAGE:
+                mod = make_shared<Storage>(id, name);
+                break;
+            case ModuleType::MEDICAL:
+                mod = make_shared<MedicalModule>(id, name);
+                break;
+            case ModuleType::REPAIR_BAY:
+                mod = make_shared<RepairBay>(id, name, 3);
+                break;
+            default:
+                cerr << "Неизвестный тип модуля!" << endl;
+                continue;
+        }
+        mod->setState(static_cast<ModuleState>(stateInt));
+        if (health < maxHealth) {
+            mod->takeDamage(maxHealth - health);
+        }
+        modules.push_back(mod);
+    }
+    size_t route_count;
+    in >> route_count;
+    for (size_t i = 0; i < route_count; ++i) {
+        int id, startId, endId, stateInt, curHealth, maxHealth;
+        double length;
+        in >> id >> startId >> endId >> length >> stateInt >> curHealth >> maxHealth;
+        ColonyModule* start = nullptr;
+        ColonyModule* end = nullptr;
+        for (auto& m : modules) {
+            if (m->getId() == startId) start = m.get();
+            if (m->getId() == endId) end = m.get();
+        }
+        if (!start || !end) {
+            cerr << "Ошибка: не найден модуль для перехода!" << endl;
+            continue;
+        }
+        auto route = make_shared<TransportRoute>(id, start, end, length);
+        route->setState(static_cast<RouteState>(stateInt));
+        if (curHealth < maxHealth) {
+            route->takeDamage(maxHealth - curHealth);
+        }
+        routes.push_back(route);
+    }
+    in.close();
+    cout << "Сценарий загружен из " << file_name << endl;
+}
+
+void Colony::export_csv(const string& file_name) const{
+    ofstream out(file_name);
+    if (!out) {
+        cerr << "Ошибка открытия файла!" << endl;
+        return;
+    }
+    out << "ID;Название;Тип;Здоровье;Макс. здоровье;Важность;Состояние;Потребление;Производство" << endl;
+    for (const auto& mod : modules) {
+        out << mod->getId() << ";" << mod->getName() << ";" << static_cast<int>(mod->getType()) << ";" << mod->getCurrentHealth() << ";" << mod->getMaxHealth() << ";" << mod->getImportanceLevel() << ";" << static_cast<int>(mod->getState()) << ";";
+        string cons, prod;
+        for (auto& pair : mod->getConsumption()) {
+            cons += to_string(static_cast<int>(pair.first)) + ":" + to_string(pair.second) + " ";
+        }
+        for (auto& pair : mod->getProduction()) {
+            prod += to_string(static_cast<int>(pair.first)) + ":" + to_string(pair.second) + " ";
+        }
+        out << cons << ";" << prod << endl;
+    }
+    out.close();
+    cout << "CSV отчёт сохранён в " << file_name << endl;
+}
+
+void Colony::export_dot(const string& file_name) const{
+    ofstream out(file_name);
+    if (!out) {
+        cerr << "Ошибка открытия файла!" << endl;
+        return;
+    }
+    out << "digraph Colony {" << endl;
+    out << "    node [shape=box, style=filled, fillcolor=lightblue];" << endl;
+    for (const auto& mod : modules) {
+        out << "    " << mod->getId() << " [label=\"" << mod->getName() << "\\n" << "HP: " << mod->getCurrentHealth() << "/" << mod->getMaxHealth() << "\"];" << endl;
+    }
+    for (const auto& route : routes) {
+        out << "    " << route->getStartModule()->getId() << " -> "
+            << route->getEndModule()->getId() << " [label=\"длина=" << route->getLength()
+            << "\\nсост=" << static_cast<int>(route->getState()) << "\"];" << endl;
+    }
+    out << "}" << endl;
+    out.close();
+    cout << "DOT-файл для схемы сохранён в " << file_name << endl;
+}
+
 
 
 
