@@ -1,5 +1,9 @@
 #include "Task.h"
 #include <algorithm>
+#include "Modules.h"
+#include "TransportRoute.h"
+#include "robot.h"
+#include "colonist.h"
 using namespace std;
 
 Task::Task(Task_type t, ColonyModule* targetModule, int moduleImportance, 
