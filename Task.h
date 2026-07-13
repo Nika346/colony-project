@@ -1,3 +1,13 @@
+#pragma once
+#include <variant>
+#include <string>
+#include "enum_col_rob.h"
+
+class ColonyModule;
+class TransportRoute;
+class Robot;
+class ColonistGroup;
+
 class Task {
 private:
     Task_type type;
@@ -9,6 +19,8 @@ private:
     variant<monostate, Robot*, ColonistGroup* > assigned;         // указатель на робота или группу колонистов
 
 public:
+    Task() : type(TASK_MINING), nameTarget(""), complexity(0), priority(0), status("empty") {} // добавила конструктор по умолчанию
+
     Task(Task_type t, ColonyModule* target, int moduleImportance, 
          double damageLevel, int complexity = 1);
      Task(Task_type t, TransportRoute* targetRoute, int importance, 
