@@ -16,10 +16,109 @@ using namespace std;
 Colony::Colony() : rng(42), currentHour(0) {
     createModules();
     int n;
-    cout<<"Введите количество транспортных путей: "<<endl;
-    cin>>n;
+    cout << "Введите количество транспортных путей: " << endl;
+    cin >> n;
     createTransportNetwork(n);
-    cout<<"Колония успешно создана!"<<endl;
+    cout << "Колония успешно создана!" << endl;
+    //СОЗДАНИЕ РОБОТОВ
+    cout << "\n--- СОЗДАНИЕ РОБОТОВ ---" << endl;
+    int robotCount;
+    cout << "Сколько роботов вы хотите создать? ";
+    cin >> robotCount;
+    for (int i = 0; i < robotCount; i++) {
+        cout << "\nРобот №" << (i + 1) << ":" << endl;
+        // Выбор типа робота
+        int typeChoice;
+        cout << "Выберите тип робота:" << endl;
+        cout << "1. Ремонтный" << endl;
+        cout << "2. Грузовой" << endl;
+        cout << "3. Добывающий" << endl;
+        cout << "Ваш выбор: ";
+        cin >> typeChoice;
+        Robot_type robotType;
+        if (typeChoice == 1) robotType = ROBOT_REPAIR;
+        else if (typeChoice == 2) robotType = ROBOT_CARGO;
+        else robotType = ROBOT_MINING; // По умолчанию добывающий
+        // Выбор модуля для размещения
+        cout << "В каком модуле разместить робота? (введите ID модуля): ";
+        int moduleId;
+        cin >> moduleId;
+        // Ищем модуль по ID
+        ColonyModule* targetModule = nullptr;
+        for (const auto& mod : modules) { // modules — это вектор умных указателей shared_ptr
+            if (mod->getId() == moduleId) {
+                targetModule = mod.get(); // Чтобы превратить умный указатель в обычный, вызывается метод .get()
+                break;
+            }
+        }
+        if (targetModule == nullptr) {
+            cout << "Модуль с ID " << moduleId << " не найден! Робот размещен в первом модуле." << endl;
+            targetModule = modules[0].get(); // Если ошиблись, ставим в первый модуль
+        }
+        // Создаем робота и добавляем в список
+        int robotId = i + 1; // ID робота начинается с 1
+        double robotSpeed;
+        cout << "Введите скорость робота (например, 2.0, 3.0 или 5.0): ";
+        cin >> robotSpeed;
+        robots.push_back(make_shared<Robot>(robotId, robotType, targetModule, robotSpeed, 100.0));
+        cout << "Робот " << robotId << " (" << robot_type_to_str(robotType) << ") создан в модуле "
+             << targetModule->getName() << "!" << endl;
+    }
+    //СОЗДАНИЕ ГРУПП КОЛОНИСТОВ
+    cout << "\n--- СОЗДАНИЕ ГРУПП КОЛОНИСТОВ ---" << endl;
+    int groupCount;
+    cout << "Сколько групп колонистов вы хотите создать? ";
+    cin >> groupCount;
+    for (int i = 0; i < groupCount; i++) {
+        cout << "\nГруппа №" << (i + 1) << ":" << endl;
+        // Выбор профессии
+        int specChoice;
+        cout << "Выберите специализацию группы:" << endl;
+        cout << "1. Инженеры" << endl;
+        cout << "2. Шахтеры" << endl;
+        cout << "3. Биологи" << endl;
+        cout << "4. Доктора" << endl;
+        cout << "5. Обычные жители" << endl;
+        cout << "Ваш выбор: ";
+        cin >> specChoice;
+        Colonist_spec spec;
+        string groupName;
+        if (specChoice == 1) { spec = SPEC_ENGINEER; groupName = "Инженеры"; }
+        else if (specChoice == 2) { spec = SPEC_MINER; groupName = "Шахтеры"; }
+        else if (specChoice == 3) { spec = SPEC_BIOLOGIST; groupName = "Биологи"; }
+        else if (specChoice == 4) { spec = SPEC_DOCTOR; groupName = "Доктора"; }
+        else { spec = SPEC_REGULAR; groupName = "Обычные жители"; }
+        // Количество человек в группе
+        int personCount;
+        cout << "Сколько колонистов в этой группе? ";
+        cin >> personCount;
+        // Выбор модуля для размещения
+        cout << "В каком модуле разместить группу? (введите ID модуля): ";
+        int moduleId;
+        cin >> moduleId;
+        // Ищем модуль по ID
+        ColonyModule* targetModule = nullptr;
+        for (const auto& mod : modules) {
+            if (mod->getId() == moduleId) {
+                targetModule = mod.get();
+                break;
+            }
+        }
+        if (targetModule == nullptr) {
+            cout << "Модуль с ID " << moduleId << " не найден! Группа размещена в первом модуле." << endl;
+            targetModule = modules[0].get();
+        }
+        // Создаем группу колонистов и добавляем в список
+        string fullGroupName = groupName + " " + to_string(i + 1);
+        colonistGroups.push_back(make_shared<ColonistGroup>(
+            fullGroupName, spec, personCount,
+            targetModule->getType(), TASK_MAINTENANCE,
+            100.0, 0.0, Resources_consumption()
+        ));
+        cout << "Группа " << fullGroupName << " (" << personCount << " чел.) создана в модуле "
+             << targetModule->getName() << "!" << endl;
+    }
+    cout << "\nЗаселение завершено! Начинаем симуляцию..." << endl;
 }
 void Colony::createModules(){
     int habitatCount, greenhouseCount, solarCount, nuclearCount, mineCount, waterRecyclerCount, storageCount, medicalCount, repairBayCount;
@@ -182,10 +281,68 @@ void Colony::tick() {
             cout << "Час " << currentHour << ": КРИТИЧЕСКИЙ УРОВЕНЬ! Ресурс " << res.getName() << " на исходе! (" << res.getCurrentAmount() << "/" << res.getMaxCapacity() << ")" << endl;
         }
     }
-
+    // 4. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
+    for (const auto& group : colonistGroups) {
+        // Если группа мертва или пуста — пропускаем её
+        if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
+        // "Сколько нужно кислорода, воды и еды на этот час группе?"
+        Resources_consumption need = group->get_total_consumption();
+        // Пытаемся списать эти ресурсы со склада. Если не хватило — возвращается false.
+        ResourcesAvailability avail;
+        avail.oxygen_ok = resources.get_resource(ResourceType::OXYGEN).consume(need.oxygen);
+        avail.water_ok = resources.get_resource(ResourceType::WATER).consume(need.water);
+        avail.food_ok = resources.get_resource(ResourceType::FOOD).consume(need.food);
+        // Передаём результаты (чего хватило, а чего нет) в группу.
+        // Если чего-то не хватило, здоровье снизится.
+        int dead = group->update_health(avail);
+        // Если кто-то умер — пишем в консоль
+        if (dead > 0) {
+            cout << "Час " << currentHour << ": Группа " << group->get_group_id()
+                 << " потеряла " << dead << " колонистов!" << endl;
+        }
+    }
+    // 5. ЗАДАЧИ И РОБОТЫ
+    // Создаем задачи на ремонт поврежденных модулей
+    for (const auto& mod : modules) {
+        // Если модуль поврежден (DAMAGED) или отключен (OFFLINE) — нужен ремонт
+        if (mod->getState() == ModuleState::DAMAGED || mod->getState() == ModuleState::OFFLINE) {
+            // Считаем, насколько сильно он сломан (от 0 до 1)
+            double damageLevel = 1.0 - (double(mod->getCurrentHealth()) / mod->getMaxHealth());
+            // Создаем задачу: тип РЕМОНТ, цель - этот модуль, важность модуля, уровень повреждения, сложность 5 часов
+            Task repairTask(TASK_REPAIR, mod.get(), mod->getImportanceLevel(), damageLevel, 5);
+            // Кладем задачу в общую очередь
+            taskQueue.addTask(repairTask);
+        }
+    }
+    // Роботы берут задачи из очереди и выполняют
+    for (const auto& robot : robots) {
+        // Если робот не свободен (он уже работает или чинится) — пропускаем
+        if (robot->get_state() != ROBOT_STATE_FREE && robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) {
+            continue;
+        }
+        // Если робот сильно разряжен или сломан — не даем ему новую задачу (он сам решит это в update)
+        if (robot->needs_maintenance()) {
+            continue;
+        }
+        // Проверяем, есть ли задачи в очереди
+        if (!taskQueue.isEmpty()) {
+            // Берем самую срочную задачу
+            Task currentTask = taskQueue.getHighestPriority();
+            // Пытаемся назначить задачу роботу (даем 4 часа на выполнение)
+            if (robot->assign_task(currentTask.getType(), 4, weather)) {
+                cout << "Робот " << robot->get_id() << " взял задачу: "
+                     << task_type_to_str(currentTask.getType()) << endl;
+            } else {
+                cout << "Робот " << robot->get_id() << " не может выполнить эту задачу" << endl;
+            }
+        }
+    }
+    // Обновляем состояние каждого робота (тратит энергию, стареет, двигается)
+    for (const auto& robot : robots) {
+        robot->update();
+    }
     currentHour++; // Увеличиваем счётчик часов
 }
-
 // Запуск цикла симуляции на несколько дней
 void Colony::run() {
     weather.rand_weather();

@@ -1,5 +1,7 @@
 #pragma once
 #include "Modules.h"
+#include "colonist.h"
+#include "PriorityTaskQueue.h"
 #include "TransportRoute.h"
 #include "resources.h"
 #include "Weather.h"
@@ -10,8 +12,25 @@
 #include <set>
 using namespace std;
 
+class Robot;
+class Weather;
+
+// Структура для приоритетной очереди в алгоритме Дейкстры, хранит информацию о модуле и времени достижения
+struct PathNode {
+    int moduleId;      // ID модуля
+    double time;       // Время достижения от старта
+    // Оператор сравнения для min-heap (приоритетная очередь по возрастанию)
+    // Меньшее время = более высокий приоритет
+    bool operator>(const PathNode& other) const {
+        return time > other.time;
+    }
+};
+
 class Colony{
 private:
+    vector<shared_ptr<Robot>> robots;           // Список всех роботов
+    vector<shared_ptr<ColonistGroup>> colonistGroups; // Список всех групп колонистов
+    PriorityTaskQueue taskQueue;                // Очередь задач, которую мы написали ранее
     vector<shared_ptr<ColonyModule>> modules;
     vector<shared_ptr<TransportRoute>> routes;
     mt19937 rng;  // генератор случайных чисел
