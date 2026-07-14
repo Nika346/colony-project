@@ -56,10 +56,10 @@ RM = "C:\Program Files\JetBrains\CLion2025.2\bin\cmake\win\x64\bin\cmake.exe" -E
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "C:\Users\Вероника\OneDrive\Рабочий стол\колония"
+CMAKE_SOURCE_DIR = C:\colony_project
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug"
+CMAKE_BINARY_DIR = C:\colony_project\cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -86,9 +86,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\CMakeFiles" "C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\\CMakeFiles\progress.marks"
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\colony_project\cmake-build-debug\CMakeFiles C:\colony_project\cmake-build-debug\\CMakeFiles\progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\colony_project\cmake-build-debug\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -152,6 +152,54 @@ Colony.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Colony.cpp.s
 .PHONY : Colony.cpp.s
 
+PriorityTaskQueue.obj: PriorityTaskQueue.cpp.obj
+.PHONY : PriorityTaskQueue.obj
+
+# target to build an object file
+PriorityTaskQueue.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/PriorityTaskQueue.cpp.obj
+.PHONY : PriorityTaskQueue.cpp.obj
+
+PriorityTaskQueue.i: PriorityTaskQueue.cpp.i
+.PHONY : PriorityTaskQueue.i
+
+# target to preprocess a source file
+PriorityTaskQueue.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/PriorityTaskQueue.cpp.i
+.PHONY : PriorityTaskQueue.cpp.i
+
+PriorityTaskQueue.s: PriorityTaskQueue.cpp.s
+.PHONY : PriorityTaskQueue.s
+
+# target to generate assembly for a file
+PriorityTaskQueue.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/PriorityTaskQueue.cpp.s
+.PHONY : PriorityTaskQueue.cpp.s
+
+Task.obj: Task.cpp.obj
+.PHONY : Task.obj
+
+# target to build an object file
+Task.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Task.cpp.obj
+.PHONY : Task.cpp.obj
+
+Task.i: Task.cpp.i
+.PHONY : Task.i
+
+# target to preprocess a source file
+Task.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Task.cpp.i
+.PHONY : Task.cpp.i
+
+Task.s: Task.cpp.s
+.PHONY : Task.s
+
+# target to generate assembly for a file
+Task.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Task.cpp.s
+.PHONY : Task.cpp.s
+
 TransportRoute.obj: TransportRoute.cpp.obj
 .PHONY : TransportRoute.obj
 
@@ -175,6 +223,30 @@ TransportRoute.s: TransportRoute.cpp.s
 TransportRoute.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/TransportRoute.cpp.s
 .PHONY : TransportRoute.cpp.s
+
+Weather.obj: Weather.cpp.obj
+.PHONY : Weather.obj
+
+# target to build an object file
+Weather.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Weather.cpp.obj
+.PHONY : Weather.cpp.obj
+
+Weather.i: Weather.cpp.i
+.PHONY : Weather.i
+
+# target to preprocess a source file
+Weather.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Weather.cpp.i
+.PHONY : Weather.cpp.i
+
+Weather.s: Weather.cpp.s
+.PHONY : Weather.s
+
+# target to generate assembly for a file
+Weather.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Weather.cpp.s
+.PHONY : Weather.cpp.s
 
 accident.obj: accident.cpp.obj
 .PHONY : accident.obj
@@ -296,29 +368,29 @@ modules.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/modules.cpp.s
 .PHONY : modules.cpp.s
 
-resourses.obj: resourses.cpp.obj
-.PHONY : resourses.obj
+resources.obj: resources.cpp.obj
+.PHONY : resources.obj
 
 # target to build an object file
-resourses.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/resourses.cpp.obj
-.PHONY : resourses.cpp.obj
+resources.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/resources.cpp.obj
+.PHONY : resources.cpp.obj
 
-resourses.i: resourses.cpp.i
-.PHONY : resourses.i
+resources.i: resources.cpp.i
+.PHONY : resources.i
 
 # target to preprocess a source file
-resourses.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/resourses.cpp.i
-.PHONY : resourses.cpp.i
+resources.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/resources.cpp.i
+.PHONY : resources.cpp.i
 
-resourses.s: resourses.cpp.s
-.PHONY : resourses.s
+resources.s: resources.cpp.s
+.PHONY : resources.s
 
 # target to generate assembly for a file
-resourses.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/resourses.cpp.s
-.PHONY : resourses.cpp.s
+resources.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/resources.cpp.s
+.PHONY : resources.cpp.s
 
 robot.obj: robot.cpp.obj
 .PHONY : robot.obj
@@ -344,30 +416,6 @@ robot.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/robot.cpp.s
 .PHONY : robot.cpp.s
 
-weather.obj: weather.cpp.obj
-.PHONY : weather.obj
-
-# target to build an object file
-weather.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/weather.cpp.obj
-.PHONY : weather.cpp.obj
-
-weather.i: weather.cpp.i
-.PHONY : weather.i
-
-# target to preprocess a source file
-weather.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/weather.cpp.i
-.PHONY : weather.cpp.i
-
-weather.s: weather.cpp.s
-.PHONY : weather.s
-
-# target to generate assembly for a file
-weather.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/weather.cpp.s
-.PHONY : weather.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -380,9 +428,18 @@ help:
 	@echo ... Colony.obj
 	@echo ... Colony.i
 	@echo ... Colony.s
+	@echo ... PriorityTaskQueue.obj
+	@echo ... PriorityTaskQueue.i
+	@echo ... PriorityTaskQueue.s
+	@echo ... Task.obj
+	@echo ... Task.i
+	@echo ... Task.s
 	@echo ... TransportRoute.obj
 	@echo ... TransportRoute.i
 	@echo ... TransportRoute.s
+	@echo ... Weather.obj
+	@echo ... Weather.i
+	@echo ... Weather.s
 	@echo ... accident.obj
 	@echo ... accident.i
 	@echo ... accident.s
@@ -398,15 +455,12 @@ help:
 	@echo ... modules.obj
 	@echo ... modules.i
 	@echo ... modules.s
-	@echo ... resourses.obj
-	@echo ... resourses.i
-	@echo ... resourses.s
+	@echo ... resources.obj
+	@echo ... resources.i
+	@echo ... resources.s
 	@echo ... robot.obj
 	@echo ... robot.i
 	@echo ... robot.s
-	@echo ... weather.obj
-	@echo ... weather.i
-	@echo ... weather.s
 .PHONY : help
 
 

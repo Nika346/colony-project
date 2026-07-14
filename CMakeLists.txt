@@ -8,11 +8,11 @@ add_executable(MyProgram main.cpp
         enum_col_rob.cpp
         colonist.cpp
         colonist.h
-        weather.h
+        Weather.h
         modules.cpp
-        resourses.cpp
+        resources.cpp
         resources.h
-        weather.cpp
+        Weather.cpp
         accident.cpp
         accident.h
         modules.h
@@ -22,4 +22,9 @@ add_executable(MyProgram main.cpp
         Colony.cpp
         TransportRoute.cpp
         TransportRoute.h
+        PriorityTaskQueue.cpp
+        PriorityTaskQueue.h
+        Task.cpp
+        Task.h
+        main.cpp
 )      # Исправлено: есть имя программы

@@ -39,7 +39,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "C:/Program Files/JetBrains/CLion2025.2/bin/cmake/win/x64/share/cmake-4.0/Modules/Platform/Windows-windres.cmake"
   "C:/Program Files/JetBrains/CLion2025.2/bin/cmake/win/x64/share/cmake-4.0/Modules/Platform/Windows.cmake"
   "C:/Program Files/JetBrains/CLion2025.2/bin/cmake/win/x64/share/cmake-4.0/Modules/Platform/WindowsPaths.cmake"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/CMakeLists.txt"
+  "C:/colony_project/CMakeLists.txt"
   "CMakeFiles/4.0.2/CMakeCCompiler.cmake"
   "CMakeFiles/4.0.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/4.0.2/CMakeRCCompiler.cmake"

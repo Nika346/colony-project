@@ -87,34 +87,42 @@ void ColonyResourceManager::initializeResources() {
         100.0,   // мин. уровень
         200.0    // критический уровень
     );
+    resources[ResourceType::OXYGEN].setCurrentAmount(500.0);
     resources[ResourceType::WATER] = Resource(
         ResourceType::WATER, "Вода",
         800.0, 50.0, 150.0
     );
+    resources[ResourceType::WATER].setCurrentAmount(400.0);
     resources[ResourceType::FOOD] = Resource(
         ResourceType::FOOD, "Пища",
         600.0, 50.0, 100.0
     );
+    resources[ResourceType::FOOD].setCurrentAmount(300.0);
     resources[ResourceType::ENERGY] = Resource(
         ResourceType::ENERGY, "Энергия",
         500.0, 0.0, 50.0
     );
+    resources[ResourceType::ENERGY].setCurrentAmount(250.0);
     resources[ResourceType::FUEL] = Resource(
         ResourceType::FUEL, "Топливо",
         200.0, 0.0, 20.0
     );
+    resources[ResourceType::FUEL].setCurrentAmount(100.0);
     resources[ResourceType::BUILDING_MATERIALS] = Resource(
         ResourceType::BUILDING_MATERIALS, "Стройматериалы",
         500.0, 0.0, 50.0
     );
+    resources[ResourceType::BUILDING_MATERIALS].setCurrentAmount(250.0);
     resources[ResourceType::MEDICINES] = Resource(
         ResourceType::MEDICINES, "Mедекоменты",
         100.0, 0.0, 10.0
     );
+    resources[ResourceType::MEDICINES].setCurrentAmount(50.0);
     resources[ResourceType::ORE] = Resource(
         ResourceType::ORE, "Руда",
         1000.0, 0.0, 0.0
     );
+    resources[ResourceType::ORE].setCurrentAmount(500.0);
 }
 ResourcesAvailability ColonyResourceManager::checkAndConsumeForGroup(double oxygenNeeded, double waterNeeded, double foodNeeded) {
     ResourcesAvailability result;

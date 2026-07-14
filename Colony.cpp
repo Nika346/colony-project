@@ -7,7 +7,7 @@
 using namespace std;
 
 // ==================== Colony ====================
-Colony::Colony() : rng(42) {
+Colony::Colony() : rng(42), currentHour(0) {
     createModules();
     int n;
     cout<<"Введите количество транспортных путей: "<<endl;
@@ -87,11 +87,11 @@ void Colony::createTransportNetwork(int totalRoutes) {
     // Этап 1: Создаём основную цепочку
     // Создаём массив индексов модулей
     vector<int> moduleIndices;
-    for (size_t i = 0; i < modules.size(); i++) {   
+    for (size_t i = 0; i < modules.size(); i++) {
         moduleIndices.push_back(i);
     }
     shuffle(moduleIndices.begin(), moduleIndices.end(), rng); // Перемешиваем
-    for (size_t i = 0; i < moduleIndices.size() - 1; i++) {    
+    for (size_t i = 0; i < moduleIndices.size() - 1; i++) {
         int j1 = moduleIndices[i];
         int j2 = moduleIndices[i + 1];
         double length = lengthDist(rng);
@@ -102,7 +102,7 @@ void Colony::createTransportNetwork(int totalRoutes) {
         route->setUsableByRobots(true);
         route->setUsableByColonists(true);
         routes.push_back(route); // добавляем в список путей
-        modules[j1]->ModulesRoutes.push_back(modules[j2]); //добавляем указатели на соседние модули     
+        modules[j1]->ModulesRoutes.push_back(modules[j2]); //добавляем указатели на соседние модули
         modules[j2]->ModulesRoutes.push_back(modules[j1]);
 
     }
@@ -133,6 +133,63 @@ void Colony::createTransportNetwork(int totalRoutes) {
     }
 
     cout << "\nВсего создано путей: " << routes.size() << "\n";
+}
+
+// Основной шаг симуляции (один час)
+void Colony::tick() {
+    // Обновляем погоду
+
+
+    // 1. ПРОИЗВОДСТВО РЕСУРСОВ
+    for (const auto& mod : modules) {
+        // Пропускаем разрушенные и отключенные модули
+        if (!mod->isOperational()) continue;
+
+        for (auto const& [ResType, amount] : mod->getProduction()) {
+            if (amount > 0) {
+                resources.get_resource(ResType).produce(amount);
+            }
+        }
+    }
+
+    // 2. ПОТРЕБЛЕНИЕ РЕСУРСОВ
+    for (const auto& mod : modules) {
+        if (!mod->isOperational()) continue;
+
+        for (auto const& [ResType, amount] : mod->getConsumption()) {
+            if (amount > 0) {
+                // Если не хватило ресурса (вернуло false) - отключаем модуль и пишем с часом
+                if (!resources.get_resource(ResType).consume(amount)) {
+                    mod->setState(ModuleState::OFFLINE);
+                    cout << "Час " << currentHour << ": Модуль " << mod->getName() << " отключен (нехватка ресурса)!" << endl;
+                    break; // Прерываем проверку для этого модуля
+                }
+            }
+        }
+    }
+
+    // 3. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
+    vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
+    for (ResourceType type : types) {
+        Resource& res = resources.get_resource(type);
+        if (res.isCritical()) {
+            cout << "Час " << currentHour << ": КРИТИЧЕСКИЙ УРОВЕНЬ! Ресурс " << res.getName() << " на исходе! (" << res.getCurrentAmount() << "/" << res.getMaxCapacity() << ")" << endl;
+        }
+    }
+
+    currentHour++; // Увеличиваем счётчик часов
+}
+
+// Запуск цикла симуляции на несколько дней
+void Colony::run() {
+    weather.rand_weather();
+    for (int i = 0; i < 5; i++) {
+        currentHour = 0;
+        cout << "--- День " << (i + 1) << " ---" << endl;
+        for (int hour = 0; hour < 24; hour++) {
+            tick();
+        }
+    }
 }
 
 // доп задания 12,13,14
@@ -278,7 +335,3 @@ void Colony::export_dot(const string& file_name) const{
     out.close();
     cout << "DOT-файл для схемы сохранён в " << file_name << endl;
 }
-
-
-
-

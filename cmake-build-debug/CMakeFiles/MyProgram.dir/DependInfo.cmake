@@ -8,16 +8,18 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/Colony.cpp" "CMakeFiles/MyProgram.dir/Colony.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/Colony.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/TransportRoute.cpp" "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/accident.cpp" "CMakeFiles/MyProgram.dir/accident.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/accident.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/colonist.cpp" "CMakeFiles/MyProgram.dir/colonist.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/colonist.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/enum_col_rob.cpp" "CMakeFiles/MyProgram.dir/enum_col_rob.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/enum_col_rob.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/main.cpp" "CMakeFiles/MyProgram.dir/main.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/main.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/modules.cpp" "CMakeFiles/MyProgram.dir/modules.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/modules.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/resourses.cpp" "CMakeFiles/MyProgram.dir/resourses.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/resourses.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/robot.cpp" "CMakeFiles/MyProgram.dir/robot.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/robot.cpp.obj.d"
-  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/weather.cpp" "CMakeFiles/MyProgram.dir/weather.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/weather.cpp.obj.d"
+  "C:/colony_project/Colony.cpp" "CMakeFiles/MyProgram.dir/Colony.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/Colony.cpp.obj.d"
+  "C:/colony_project/PriorityTaskQueue.cpp" "CMakeFiles/MyProgram.dir/PriorityTaskQueue.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/PriorityTaskQueue.cpp.obj.d"
+  "C:/colony_project/Task.cpp" "CMakeFiles/MyProgram.dir/Task.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/Task.cpp.obj.d"
+  "C:/colony_project/TransportRoute.cpp" "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj.d"
+  "C:/colony_project/Weather.cpp" "CMakeFiles/MyProgram.dir/Weather.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/Weather.cpp.obj.d"
+  "C:/colony_project/accident.cpp" "CMakeFiles/MyProgram.dir/accident.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/accident.cpp.obj.d"
+  "C:/colony_project/colonist.cpp" "CMakeFiles/MyProgram.dir/colonist.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/colonist.cpp.obj.d"
+  "C:/colony_project/enum_col_rob.cpp" "CMakeFiles/MyProgram.dir/enum_col_rob.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/enum_col_rob.cpp.obj.d"
+  "C:/colony_project/main.cpp" "CMakeFiles/MyProgram.dir/main.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/main.cpp.obj.d"
+  "C:/colony_project/modules.cpp" "CMakeFiles/MyProgram.dir/modules.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/modules.cpp.obj.d"
+  "C:/colony_project/resources.cpp" "CMakeFiles/MyProgram.dir/resources.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/resources.cpp.obj.d"
+  "C:/colony_project/robot.cpp" "CMakeFiles/MyProgram.dir/robot.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/robot.cpp.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
