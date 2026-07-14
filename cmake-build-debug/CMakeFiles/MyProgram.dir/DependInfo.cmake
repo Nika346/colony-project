@@ -8,6 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/Colony.cpp" "CMakeFiles/MyProgram.dir/Colony.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/Colony.cpp.obj.d"
+  "C:/Users/Вероника/OneDrive/Рабочий стол/колония/TransportRoute.cpp" "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj.d"
   "C:/Users/Вероника/OneDrive/Рабочий стол/колония/accident.cpp" "CMakeFiles/MyProgram.dir/accident.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/accident.cpp.obj.d"
   "C:/Users/Вероника/OneDrive/Рабочий стол/колония/colonist.cpp" "CMakeFiles/MyProgram.dir/colonist.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/colonist.cpp.obj.d"
   "C:/Users/Вероника/OneDrive/Рабочий стол/колония/enum_col_rob.cpp" "CMakeFiles/MyProgram.dir/enum_col_rob.cpp.obj" "gcc" "CMakeFiles/MyProgram.dir/enum_col_rob.cpp.obj.d"

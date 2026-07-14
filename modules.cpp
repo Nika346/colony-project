@@ -150,12 +150,8 @@ double Storage::getStoredAmount(ResourceType type) const {
     auto it = currentStorage.find(type);
     return (it != currentStorage.end()) ? it->second : 0.0;
 }
-void Storage::setCapacity(ResourceType type, double capacity) {
-    storageCapacity[type] = capacity;
-}
 
-
-
+//MedicalModule
 MedicalModule::MedicalModule(int id, string name)
     : ColonyModule(id, name, ModuleType::MEDICAL, 80, 10),
       healingRate(5), patientsCount(0) {
@@ -165,3 +161,24 @@ MedicalModule::MedicalModule(int id, string name)
 void MedicalModule::treatPatients(int count) {
     patientsCount = max(0, patientsCount - count);
 }
+
+// RepairBay
+RepairBay::RepairBay(int id, string name, int capacity)
+    : ColonyModule(id, name, ModuleType::REPAIR_BAY, 90, 8),
+      repairCapacity(capacity), robotsInRepair(0), repairSpeed(30) {
+    setConsumption(ResourceType::ENERGY, 12.0);
+    setConsumption(ResourceType::SPARE_PARTS, 2.0);
+}
+bool RepairBay::acceptRobotForRepair() {
+    if (robotsInRepair >= repairCapacity) {
+        return false;  // Нет места
+    }
+    robotsInRepair++;
+    return true;
+}
+int RepairBay::repairRobot() {
+    if (robotsInRepair == 0) return 0;
+    robotsInRepair--;    // Один робот отремонтирован — отпускаем его
+    return repairSpeed;  // Возвращаем, сколько здоровья восстановили
+}
+

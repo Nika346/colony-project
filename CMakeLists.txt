@@ -18,4 +18,8 @@ add_executable(MyProgram main.cpp
         modules.h
         robot.cpp
         robot.h
+        Colony.h
+        Colony.cpp
+        TransportRoute.cpp
+        TransportRoute.h
 )      # Исправлено: есть имя программы

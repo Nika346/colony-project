@@ -21,7 +21,7 @@ enum class ModuleState {
 
 
 // Перечисление типов модулей
-enum class ModuleType {
+enum class ModuleType {     //добавить ремонтный цех
     HABITAT,           // жилой модуль
     GREENHOUSE,        // теплица
     SOLAR_POWER,       // солнечная электростанция
@@ -29,9 +29,9 @@ enum class ModuleType {
     MINE,              // шахта
     WATER_RECYCLER,    // очистка воды
     STORAGE,           // склад
-    MEDICAL            // медицинский модуль
+    MEDICAL,           // медицинский модуль
+    REPAIR_BAY         // ремонтный цех
 };
-
 
 // Перечисление типов ресурсов
 enum class ResourceType {
@@ -41,10 +41,10 @@ enum class ResourceType {
     ENERGY,            // энергия
     FUEL,              // топливо
     BUILDING_MATERIALS,// стройматериалы
-    MEDICINES,         // медекоменты
+    MEDICINES,         // медикоменты
+    SPARE_PARTS,       // запчасти
     ORE                // руда
 };
-
 
 // Базовый класс модуля
 class ColonyModule {
@@ -165,7 +165,6 @@ public:
     bool storeResource(ResourceType type, double amount);
     bool withdrawResource(ResourceType type, double amount);
     double getStoredAmount(ResourceType type) const;
-    void setCapacity(ResourceType type, double capacity); //у тебя была инициализирована но не объявлена эта функция
 };
 // 8. Медицинский модуль
 class MedicalModule : public ColonyModule {
@@ -178,4 +177,21 @@ public:
     int getPatientsCount() const { return patientsCount; }
     void addPatient(int count) { patientsCount += count; }
 };
+
+// 9. Ремонтный цех
+class RepairBay : public ColonyModule {
+private:
+    int repairCapacity;           // сколько роботов можно чинить одновременно
+    int robotsInRepair;           // сколько роботов сейчас в ремонте
+    int repairSpeed;              // сколько здоровья восстанавливается за день
+
+public:
+    RepairBay(int id, string name, int capacity = 3);
+    bool acceptRobotForRepair();   // Принять робота в ремонт
+    int repairRobot();         // Отремонтировать робота (возвращает количество восстановленного здоровья)
+    bool hasCapacity() const { return robotsInRepair < repairCapacity; } // Есть ли свободное место?
+    int getRobotsInRepair() const { return robotsInRepair; }
+    int getRepairCapacity() const { return repairCapacity; }
+};
+
 #endif //MYPROJECT_MODULES_H

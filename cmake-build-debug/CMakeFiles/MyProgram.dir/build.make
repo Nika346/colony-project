@@ -183,6 +183,34 @@ CMakeFiles/MyProgram.dir/robot.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyProgram.dir/robot.cpp.s"
 	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\Вероника\OneDrive\Рабочий стол\колония\robot.cpp" -o CMakeFiles\MyProgram.dir\robot.cpp.s
 
+CMakeFiles/MyProgram.dir/Colony.cpp.obj: CMakeFiles/MyProgram.dir/flags.make
+CMakeFiles/MyProgram.dir/Colony.cpp.obj: C:/Users/Вероника/OneDrive/Рабочий\ стол/колония/Colony.cpp
+CMakeFiles/MyProgram.dir/Colony.cpp.obj: CMakeFiles/MyProgram.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/MyProgram.dir/Colony.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyProgram.dir/Colony.cpp.obj -MF CMakeFiles\MyProgram.dir\Colony.cpp.obj.d -o CMakeFiles\MyProgram.dir\Colony.cpp.obj -c "C:\Users\Вероника\OneDrive\Рабочий стол\колония\Colony.cpp"
+
+CMakeFiles/MyProgram.dir/Colony.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MyProgram.dir/Colony.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\Вероника\OneDrive\Рабочий стол\колония\Colony.cpp" > CMakeFiles\MyProgram.dir\Colony.cpp.i
+
+CMakeFiles/MyProgram.dir/Colony.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyProgram.dir/Colony.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\Вероника\OneDrive\Рабочий стол\колония\Colony.cpp" -o CMakeFiles\MyProgram.dir\Colony.cpp.s
+
+CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj: CMakeFiles/MyProgram.dir/flags.make
+CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj: C:/Users/Вероника/OneDrive/Рабочий\ стол/колония/TransportRoute.cpp
+CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj: CMakeFiles/MyProgram.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj -MF CMakeFiles\MyProgram.dir\TransportRoute.cpp.obj.d -o CMakeFiles\MyProgram.dir\TransportRoute.cpp.obj -c "C:\Users\Вероника\OneDrive\Рабочий стол\колония\TransportRoute.cpp"
+
+CMakeFiles/MyProgram.dir/TransportRoute.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MyProgram.dir/TransportRoute.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\Вероника\OneDrive\Рабочий стол\колония\TransportRoute.cpp" > CMakeFiles\MyProgram.dir\TransportRoute.cpp.i
+
+CMakeFiles/MyProgram.dir/TransportRoute.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyProgram.dir/TransportRoute.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.2\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\Вероника\OneDrive\Рабочий стол\колония\TransportRoute.cpp" -o CMakeFiles\MyProgram.dir\TransportRoute.cpp.s
+
 # Object files for target MyProgram
 MyProgram_OBJECTS = \
 "CMakeFiles/MyProgram.dir/main.cpp.obj" \
@@ -192,7 +220,9 @@ MyProgram_OBJECTS = \
 "CMakeFiles/MyProgram.dir/resourses.cpp.obj" \
 "CMakeFiles/MyProgram.dir/weather.cpp.obj" \
 "CMakeFiles/MyProgram.dir/accident.cpp.obj" \
-"CMakeFiles/MyProgram.dir/robot.cpp.obj"
+"CMakeFiles/MyProgram.dir/robot.cpp.obj" \
+"CMakeFiles/MyProgram.dir/Colony.cpp.obj" \
+"CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj"
 
 # External object files for target MyProgram
 MyProgram_EXTERNAL_OBJECTS =
@@ -205,11 +235,13 @@ MyProgram.exe: CMakeFiles/MyProgram.dir/resourses.cpp.obj
 MyProgram.exe: CMakeFiles/MyProgram.dir/weather.cpp.obj
 MyProgram.exe: CMakeFiles/MyProgram.dir/accident.cpp.obj
 MyProgram.exe: CMakeFiles/MyProgram.dir/robot.cpp.obj
+MyProgram.exe: CMakeFiles/MyProgram.dir/Colony.cpp.obj
+MyProgram.exe: CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj
 MyProgram.exe: CMakeFiles/MyProgram.dir/build.make
 MyProgram.exe: CMakeFiles/MyProgram.dir/linkLibs.rsp
 MyProgram.exe: CMakeFiles/MyProgram.dir/objects1.rsp
 MyProgram.exe: CMakeFiles/MyProgram.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable MyProgram.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\Вероника\OneDrive\Рабочий стол\колония\cmake-build-debug\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable MyProgram.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\MyProgram.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

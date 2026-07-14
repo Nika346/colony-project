@@ -1,6 +1,8 @@
 // Created by Вероника on 06.07.2026.
 #include "robot.h"
 #include <algorithm>  // для std::max, std::min
+#include <cmath>
+#include <climits>
 using namespace std;
 /*
  * Конструктор робота
@@ -227,4 +229,21 @@ bool Robot::can_move() const {
            state != ROBOT_STATE_DAMAGED &&
            state != ROBOT_STATE_CHARGING &&
            energy_charge > 5;
+}
+
+bool Robot::can_move(const Weather& weather) const{
+    if (!can_move()) return false;
+    return weather.get_speed() > 0.0;
+}
+
+double Robot::get_now_speed(const Weather& weather) const{
+    return speed * weather.get_speed();
+}
+
+int Robot::time_move(double distans, const Weather& weather) const{
+    double now_speed = get_now_speed(weather);
+    if (now_speed <= 0.0){
+        return INT_MAX;
+    }
+    return static_cast<int>(ceil(distans/ now_speed));
 }

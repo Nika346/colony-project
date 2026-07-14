@@ -128,6 +128,54 @@ MyProgram/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/build
 .PHONY : MyProgram/fast
 
+Colony.obj: Colony.cpp.obj
+.PHONY : Colony.obj
+
+# target to build an object file
+Colony.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Colony.cpp.obj
+.PHONY : Colony.cpp.obj
+
+Colony.i: Colony.cpp.i
+.PHONY : Colony.i
+
+# target to preprocess a source file
+Colony.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Colony.cpp.i
+.PHONY : Colony.cpp.i
+
+Colony.s: Colony.cpp.s
+.PHONY : Colony.s
+
+# target to generate assembly for a file
+Colony.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/Colony.cpp.s
+.PHONY : Colony.cpp.s
+
+TransportRoute.obj: TransportRoute.cpp.obj
+.PHONY : TransportRoute.obj
+
+# target to build an object file
+TransportRoute.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj
+.PHONY : TransportRoute.cpp.obj
+
+TransportRoute.i: TransportRoute.cpp.i
+.PHONY : TransportRoute.i
+
+# target to preprocess a source file
+TransportRoute.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/TransportRoute.cpp.i
+.PHONY : TransportRoute.cpp.i
+
+TransportRoute.s: TransportRoute.cpp.s
+.PHONY : TransportRoute.s
+
+# target to generate assembly for a file
+TransportRoute.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyProgram.dir\build.make CMakeFiles/MyProgram.dir/TransportRoute.cpp.s
+.PHONY : TransportRoute.cpp.s
+
 accident.obj: accident.cpp.obj
 .PHONY : accident.obj
 
@@ -329,6 +377,12 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... MyProgram
+	@echo ... Colony.obj
+	@echo ... Colony.i
+	@echo ... Colony.s
+	@echo ... TransportRoute.obj
+	@echo ... TransportRoute.i
+	@echo ... TransportRoute.s
 	@echo ... accident.obj
 	@echo ... accident.i
 	@echo ... accident.s

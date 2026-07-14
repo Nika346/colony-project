@@ -1,4 +1,8 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/MyProgram.dir/Colony.cpp.obj"
+  "CMakeFiles/MyProgram.dir/Colony.cpp.obj.d"
+  "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj"
+  "CMakeFiles/MyProgram.dir/TransportRoute.cpp.obj.d"
   "CMakeFiles/MyProgram.dir/accident.cpp.obj"
   "CMakeFiles/MyProgram.dir/accident.cpp.obj.d"
   "CMakeFiles/MyProgram.dir/colonist.cpp.obj"
