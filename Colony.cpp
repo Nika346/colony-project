@@ -1,9 +1,15 @@
 #include "Colony.h"
+#include "robot.h"
+#include "Weather.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <set>
 #include <utility>
+#include <queue>
+#include <limits>
+#include <map>
+#include "Colony.h"
 using namespace std;
 
 // ==================== Colony ====================
