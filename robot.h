@@ -62,7 +62,7 @@ public:
     double get_efficiency() const { return efficiency; }
     double get_wear_level() const { return wear_level; }
     double get_now_speed(const Weather& weather) const; // эта функция вычисляет реальную скорость с учетом погоды
-    int time_move(double distans, const Weather& weather) const; // для вычисления времени с учетом погоды
+   
     // СЕТТЕРЫ
     void set_module(ColonyModule* mod) { current_module = mod; }
     void set_state(Robot_state new_state) { state = new_state; }
