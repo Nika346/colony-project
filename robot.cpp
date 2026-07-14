@@ -35,7 +35,7 @@ Robot::Robot(int id, Robot_type type, ColonyModule* current_module,
  * Назначение задачи роботу
  * Проверяет, может ли робот выполнить задачу, и назначает её
  */
-bool Robot::assign_task(Task_type task, int duration) {
+bool Robot::assign_task(Task_type task, int duration, const Weather& weather) {
     // Проверяем, может ли робот выполнять такую задачу
     if (!can_perform_task(task)) {
         cout << "Робот " << id << " не может выполнять задачу "
@@ -50,6 +50,16 @@ bool Robot::assign_task(Task_type task, int duration) {
     if (energy_charge < 10) {
         cout << "Робот " << id << " слишком мало заряда для работы" << endl;
         return false;
+    }
+    // проверка погоды
+    if (task == TASK_REPAIR || task == TASK_EMERGENCY || task == TASK_CARGO || task == TASK_CONSTRUCTION || task == TASK_MINING || task == TASK_EXPLORATION) {
+        if (weather.get_speed() <= 0.0) {
+            cout << "Робот " << id << " не может двигаться из-за погоды (скорость = 0)" << endl;
+            return false;
+        }
+        if (weather.get_speed() < 0.3) {
+            cout << "Предупреждение: погода сильно замедляет робота " << id << endl;
+        }
     }
     // Назначаем задачу
     current_task = task;

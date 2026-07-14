@@ -1,7 +1,7 @@
 //
 // Created by Вероника on 06.07.2026.
 //
-#include "modules.h"
+#include "Modules.h"
 #include <iostream>
 using namespace std;
 ColonyModule::ColonyModule(int id, string name, ModuleType type,
@@ -181,4 +181,5 @@ int RepairBay::repairRobot() {
     robotsInRepair--;    // Один робот отремонтирован — отпускаем его
     return repairSpeed;  // Возвращаем, сколько здоровья восстановили
 }
+
 

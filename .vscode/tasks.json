@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "g++ build colony project",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-std=c++17",
+                "-g",
+                "-I${workspaceFolder}",
+                "${workspaceFolder}/Modules.cpp",
+                "${workspaceFolder}/resources.cpp",
+                "${workspaceFolder}/TransportRoute.cpp",
+                "${workspaceFolder}/Colony.cpp",
+                "${workspaceFolder}/Weather.cpp",
+                "${workspaceFolder}/robot.cpp",
+                "${workspaceFolder}/colonist.cpp",
+                "${workspaceFolder}/Task.cpp",
+                "${workspaceFolder}/PriorityTaskQueue.cpp",
+                "${workspaceFolder}/accident.cpp",
+                "${workspaceFolder}/enum_col_rob.cpp",
+                "${workspaceFolder}/main.cpp",
+                "-o",
+                "${workspaceFolder}/colony.exe"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "C++ compiler"
+        }
+    ]
+}
+
+
+

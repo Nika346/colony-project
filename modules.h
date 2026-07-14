@@ -7,6 +7,8 @@
 #pragma once
 #include <string>
 #include <map>
+#include <vector>
+#include <memory>
 using namespace std;
 
 
@@ -40,8 +42,8 @@ enum class ResourceType {
     FOOD,              // пища
     ENERGY,            // энергия
     FUEL,              // топливо
-    BUILDING_MATERIALS,// стройматериалы
-    MEDICINES,         // медикоменты
+    BUILDING_MATERIALS,// стройматериалы 
+    MEDICINES,         // медикоменты 
     SPARE_PARTS,       // запчасти
     ORE                // руда
 };
@@ -62,6 +64,7 @@ protected:
     map<ResourceType, double> consumptionRate;
     map<ResourceType, double> productionRate;
 public:
+    vector<shared_ptr<ColonyModule>> ModulesRoutes;
     ColonyModule(int id, string name, ModuleType type,
                  int maxHealth, int importance);
     virtual ~ColonyModule()=default;
@@ -184,7 +187,7 @@ private:
     int repairCapacity;           // сколько роботов можно чинить одновременно
     int robotsInRepair;           // сколько роботов сейчас в ремонте
     int repairSpeed;              // сколько здоровья восстанавливается за день
-
+    
 public:
     RepairBay(int id, string name, int capacity = 3);
     bool acceptRobotForRepair();   // Принять робота в ремонт
