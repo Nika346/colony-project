@@ -15,10 +15,10 @@ Task PriorityTaskQueue::getHighestPriority() {
     pq.pop(); //удаляем первый элемент, те top
     return top;
 }
-const Task& PriorityTaskQueue::peek() const {
+Task PriorityTaskQueue::peek() const {
     if (pq.empty()) {
         cout << "Приоритетная очередь задач пуста!";
-        return;
+        return Task();
     }
     return pq.top();
 }
@@ -31,14 +31,7 @@ size_t PriorityTaskQueue::size() const {
     return pq.size();
 }
 
-bool PriorityTaskQueue::peek(Task& out) const {
-    if (pq.empty()) {
-        cout << "Приоритетная очередь задач пуста!";
-        return false;
-    }
-    out = pq.top();
-    return true;
-}
+
 
 
 
