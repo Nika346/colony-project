@@ -32,7 +32,7 @@ public:
     bool isAccessible() const;   // Проверка, доступен ли путь (не разрушен и не перегружен)
     void takeDamage(int amount);
     void repair(int amount);
-    bool isPassable() const;
+    bool isPassable(bool forRobots=true) const;
 
     int getId() const { return id; }
     ColonyModule* getStartModule() const { return startModule; }
