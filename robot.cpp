@@ -250,10 +250,3 @@ double Robot::get_now_speed(const Weather& weather) const{
     return speed * weather.get_speed();
 }
 
-int Robot::time_move(double distans, const Weather& weather) const{
-    double now_speed = get_now_speed(weather);
-    if (now_speed <= 0.0){
-        return INT_MAX;
-    }
-    return static_cast<int>(ceil(distans/ now_speed));
-}
