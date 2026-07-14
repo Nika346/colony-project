@@ -10,6 +10,20 @@
 #include <set>
 using namespace std;
 
+class Robot;
+class Weather;
+
+// Структура для приоритетной очереди в алгоритме Дейкстры, хранит информацию о модуле и времени достижения
+struct PathNode {
+    int moduleId;      // ID модуля
+    double time;       // Время достижения от старта
+    // Оператор сравнения для min-heap (приоритетная очередь по возрастанию)
+    // Меньшее время = более высокий приоритет
+    bool operator>(const PathNode& other) const {
+        return time > other.time;
+    }
+};
+
 class Colony{
 private:
     vector<shared_ptr<ColonyModule>> modules;
