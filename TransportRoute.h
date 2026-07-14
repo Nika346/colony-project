@@ -27,6 +27,9 @@ private:
     bool usableByColonists;     // можно использовать колонистами
 public:
     TransportRoute(int id, ColonyModule* start, ColonyModule* end, double length);
+    // Вычислить время прохождения для конкретного робота в конкретных условиях
+    double calculateTravelTime(const Robot& robot, const Weather& weather) const;
+    bool isAccessible() const;   // Проверка, доступен ли путь (не разрушен и не перегружен)
     void takeDamage(int amount);
     void repair(int amount);
     bool isPassable() const;
