@@ -31,4 +31,16 @@ public:
     void download(const string& file_name);
     void export_csv(const string& file_name) const;
     void export_dot(const string& file_name) const;
+
+
+    // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
+    // Основной метод: поиск кратчайшего пути между двумя модулями
+    // Возвращает вектор ID модулей в порядке прохождения (от старта к цели)
+    // Если путь не найден - возвращает пустой вектор
+    vector<int> findShortestPath(int startModuleId, int endModuleId, const Robot& robot, const Weather& weather);
+    // Вспомогательный метод: найти все пути, связанные с модулем
+    // Возвращает вектор указателей на TransportRoute, где модуль является началом или концом
+    vector<shared_ptr<TransportRoute>> getRoutesForModule(int moduleId) const;
+    // Вспомогательный метод: найти модуль по его ID, возвращает shared_ptr на модуль или nullptr, если не найден
+    shared_ptr<ColonyModule> findModuleById(int id) const;
 };
