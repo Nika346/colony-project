@@ -5,6 +5,9 @@
 #include "Weather.h"
 #include <memory>
 #include <random>
+#include <queue>
+#include <map>
+#include <set>
 using namespace std;
 
 class Colony{
