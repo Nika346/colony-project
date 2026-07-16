@@ -276,8 +276,9 @@ void Colony::tick() {
     if (rand() % 100 < 3) {
         generateAccident();
     }
-
-    // 4. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
+    // 4. Обновление активных аварий
+    updateActiveAccidents();
+    // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
     vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     for (ResourceType type : types) {
         Resource& res = resources.get_resource(type);
@@ -285,7 +286,7 @@ void Colony::tick() {
             cout << "Час " << currentHour << ": КРИТИЧЕСКИЙ УРОВЕНЬ! Ресурс " << res.getName() << " на исходе! (" << res.getCurrentAmount() << "/" << res.getMaxCapacity() << ")" << endl;
         }
     }
-    // 5. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
+    // 6. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
     for (const auto& group : colonistGroups) {
         // Если группа мертва или пуста — пропускаем её
         if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
@@ -305,7 +306,7 @@ void Colony::tick() {
                  << " потеряла " << dead << " колонистов!" << endl;
         }
     }
-    // 6. ЗАДАЧИ И РОБОТЫ
+    // 7. ЗАДАЧИ И РОБОТЫ
     // Создаем задачи на ремонт поврежденных модулей
     for (const auto& mod : modules) {
         // Если модуль поврежден (DAMAGED) или отключен (OFFLINE) — нужен ремонт
@@ -396,6 +397,21 @@ void Colony::generateAccident() {
     }
 }
 
+void Colony::updateActiveAccidents() {
+    // Идём по всем активным авариям
+    for (auto it = activeAccidents.begin(); it != activeAccidents.end(); ) {
+        Accident* acc = *it;  // Получаем указатель на аварию
+        acc->update();// Вызываем update() — он уменьшает time_to_end на 1
+        // Проверяем, завершилась ли авария
+        if (!acc->isActive()) {
+            delete acc;  // Освобождаем память!
+            it = activeAccidents.erase(it);  // Удаляем элемент из вектора
+        } else {
+            // Авария ещё активна — переходим к следующей
+            ++it;
+        }
+    }
+}
 
 // доп задания 12,13,14
 void Colony::save(const string& file_name) const{
