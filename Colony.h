@@ -5,6 +5,7 @@
 #include "TransportRoute.h"
 #include "resources.h"
 #include "Weather.h"
+#include "Accident.h"
 #include <memory>
 #include <random>
 #include <queue>
