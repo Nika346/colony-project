@@ -557,6 +557,15 @@ void Colony::export_dot(const string& file_name) const{
     cout << "DOT-файл для схемы сохранён в " << file_name << endl;
 }
 
+void Colony::show_graph(){
+    export_dot("colony_graph.dot");
+    int res = system("dot -Tpng colony_graph.dot -o colony_graph.png");
+    if (res == 0){
+        system("start colony_graph.png");
+    } else {
+        cout << "нет проги" << endl;
+    }
+}
 
 // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
 shared_ptr<ColonyModule> Colony::findModuleById(int id) const { // Найти модуль по ID
