@@ -56,6 +56,7 @@ public:
     void download(const string& file_name);
     void export_csv(const string& file_name) const;
     void export_dot(const string& file_name) const;
+    void show_graph();
 
 
     // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
