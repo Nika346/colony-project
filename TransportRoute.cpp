@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <set>
 #include <utility>
+#include <limits>
+#include "robot.h"
+#include "Weather.h"
 using namespace std;
 
 // ==================== TransportRoute ====================
