@@ -48,6 +48,10 @@ public:
     void tick(); // Делает один шаг (1 час)
     void run();  // Запускает цикл симуляции
 
+    void generateAccident();
+    void createRepairTask(Accident* accident);
+    void updateActiveAccidents();
+
     // доп задания 12,13,14
     void save(const string& file_name) const;
     void download(const string& file_name);
