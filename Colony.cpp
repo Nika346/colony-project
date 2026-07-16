@@ -250,9 +250,9 @@ void Colony::tick() {
         // Пропускаем разрушенные и отключенные модули
         if (!mod->isOperational()) continue;
 
-        for (auto const& [ResType, amount] : mod->getProduction()) {
+        for (auto const& [ResType, amount] : mod->getProduction()) {//проходит по словарю, который возращает getProduction, ResType - ключ, amount - значение
             if (amount > 0) {
-                resources.get_resource(ResType).produce(amount);
+                resources.get_resource(ResType).produce(amount);// добавляем в хранилище произведенные ресурсы
             }
         }
     }
@@ -272,8 +272,14 @@ void Colony::tick() {
             }
         }
     }
+    // 3. генерация аварии(каждый час, шанс 3%)
+    if (rand() % 100 < 3) {
+        generateAccident();
+    }
+    // 4. Обновление активных аварий
+    updateActiveAccidents();
 
-    // 3. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
+    // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
     vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     for (ResourceType type : types) {
         Resource& res = resources.get_resource(type);
@@ -281,7 +287,7 @@ void Colony::tick() {
             cout << "Час " << currentHour << ": КРИТИЧЕСКИЙ УРОВЕНЬ! Ресурс " << res.getName() << " на исходе! (" << res.getCurrentAmount() << "/" << res.getMaxCapacity() << ")" << endl;
         }
     }
-    // 4. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
+    // 6. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
     for (const auto& group : colonistGroups) {
         // Если группа мертва или пуста — пропускаем её
         if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
@@ -301,7 +307,7 @@ void Colony::tick() {
                  << " потеряла " << dead << " колонистов!" << endl;
         }
     }
-    // 5. ЗАДАЧИ И РОБОТЫ
+    // 7. ЗАДАЧИ И РОБОТЫ
     // Создаем задачи на ремонт поврежденных модулей
     for (const auto& mod : modules) {
         // Если модуль поврежден (DAMAGED) или отключен (OFFLINE) — нужен ремонт
@@ -345,8 +351,8 @@ void Colony::tick() {
 }
 // Запуск цикла симуляции на несколько дней
 void Colony::run() {
-    weather.rand_weather();
     for (int i = 0; i < 5; i++) {
+        weather.rand_weather();
         currentHour = 0;
         cout << "--- День " << (i + 1) << " ---" << endl;
         for (int hour = 0; hour < 24; hour++) {
@@ -354,6 +360,44 @@ void Colony::run() {
         }
     }
 }
+
+void Colony::generateAccident() {
+    // Выбираем случайный модуль
+    uniform_int_distribution<int> modDist(0, modules.size() - 1);
+    int modIndex = modDist(rng);
+    ColonyModule* targetModule = modules[modIndex].get();
+    // Генерируем аварию (шанс уже проверили выше, поэтому probability = 100)
+    Accident* accident = Accident_generator::generate_accident( weather, 100, targetModule);
+    if (accident) {
+        accident->apply_effect(targetModule, resources); // Применяем эффекты (урон модулю, потеря ресурсов)
+        activeAccidents.push_back(accident); // Добавляем в список активных
+        cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
+        
+        // Создаём задачу на ремонт
+        Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
+        switch (accident->get_type()) {
+            case Accident_type::Fire:
+            case Accident_type::Oxyden_leakege:
+            case Accident_type::Brake_water_system:
+                taskType = TASK_EMERGENCY;  // аварийные работы
+                break;
+            case Accident_type::Illness:
+                taskType = TASK_MEDICAL;  // медицинская помощь
+                break;
+            default:
+                taskType = TASK_REPAIR;  // обычный ремонт
+                break;
+        }
+        // Рассчитываем приоритет
+        int moduleImportance = targetModule->getImportanceLevel();
+        double damageLevel = accident->get_force() / 10.0;  // сила аварии (0.1 - 0.5)
+        Task task(taskType, targetModule, moduleImportance, damageLevel, accident->get_force());
+        
+        // Добавляем в приоритетную очередь
+        taskQueue.addTask(task);
+    }
+}
+
 
 // доп задания 12,13,14
 void Colony::save(const string& file_name) const{
