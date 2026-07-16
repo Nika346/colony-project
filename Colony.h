@@ -32,6 +32,7 @@ private:
     vector<shared_ptr<Robot>> robots;           // Список всех роботов
     vector<shared_ptr<ColonistGroup>> colonistGroups; // Список всех групп колонистов
     PriorityTaskQueue taskQueue;                // Очередь задач, которую мы написали ранее
+    vector<Accident*> activeAccidents; // активные аварии
     vector<shared_ptr<ColonyModule>> modules;
     vector<shared_ptr<TransportRoute>> routes;
     mt19937 rng;  // генератор случайных чисел
