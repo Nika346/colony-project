@@ -4,6 +4,9 @@
 #include <random>
 using namespace std;
 
+class Robot;
+class Weather;
+
 enum class RouteState {
     OPERATIONAL,      // исправен
     DAMAGED,          // частично повреждён
