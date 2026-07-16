@@ -276,10 +276,8 @@ void Colony::tick() {
     if (rand() % 100 < 3) {
         generateAccident();
     }
-    // 4. Обновление активных аварий
-    updateActiveAccidents();
 
-    // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
+    // 4. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
     vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     for (ResourceType type : types) {
         Resource& res = resources.get_resource(type);
@@ -287,7 +285,7 @@ void Colony::tick() {
             cout << "Час " << currentHour << ": КРИТИЧЕСКИЙ УРОВЕНЬ! Ресурс " << res.getName() << " на исходе! (" << res.getCurrentAmount() << "/" << res.getMaxCapacity() << ")" << endl;
         }
     }
-    // 6. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
+    // 5. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
     for (const auto& group : colonistGroups) {
         // Если группа мертва или пуста — пропускаем её
         if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
@@ -307,7 +305,7 @@ void Colony::tick() {
                  << " потеряла " << dead << " колонистов!" << endl;
         }
     }
-    // 7. ЗАДАЧИ И РОБОТЫ
+    // 6. ЗАДАЧИ И РОБОТЫ
     // Создаем задачи на ремонт поврежденных модулей
     for (const auto& mod : modules) {
         // Если модуль поврежден (DAMAGED) или отключен (OFFLINE) — нужен ремонт
