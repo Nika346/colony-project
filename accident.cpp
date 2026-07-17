@@ -6,7 +6,7 @@ Accident::Accident(Accident_type t, int f, int dur, const string& desc, int urg,
 
 Accident::~Accident() {}
 
-void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceManager) {
+void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceManager, vector<shared_ptr<ColonistGroup>>& colonistGroups) {
     // Если переданный модуль равен nullptr, берём сохранённый (поле Mod)
     if (!mod) mod = Mod;
     if (!mod) {
@@ -50,6 +50,20 @@ void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceMa
             resourceManager.get_resource(ResourceType::FOOD).consume(force * 5);
             resourceManager.get_resource(ResourceType::WATER).consume(force * 3);
             cout << "Вспышка болезни! Требуется медицинская помощь." << endl;
+            for(auto& group: colonistGroups){
+                if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
+                double health_loss = force * 2.0;
+                double new_health = max(0.0, group->get_health() - health_loss);
+                group->set_health(new_health);
+                if ( new_health == 0){
+                    int dead = group->get_count();
+                    group->remove_colonists(dead);
+                    cout << "Группа " << group->get_group_id() << "погибла от болезни!" << endl;
+                } else if (new_health < 30){
+                    group->set_opportunity_to_work(false);
+                    group->set_state(STATE_TREATMENT);
+                }
+            }
             break;
 
         case Accident_type::Damage_robot:
