@@ -4,6 +4,7 @@
 #include "Weather.h"
 #include "Resources.h"
 #include "Modules.h"
+#include "colonist.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -27,7 +28,7 @@ private:
 public:
     Accident(Accident_type t, int f, int dur, const string& desc, int urg, ColonyModule* module = nullptr);
 
-    void apply_effect(ColonyModule* mod, ColonyResourceManager& resourceManager);
+    void apply_effect(ColonyModule* mod, ColonyResourceManager& resourceManager, vector<shared_ptr<ColonistGroup>>& colonistGroups);
     void update(); // обновление собфтий
     bool isActive() const;
     Accident_type get_type() const;
