@@ -368,7 +368,7 @@ void Colony::generateAccident() {
     // Генерируем аварию (шанс уже проверили выше, поэтому probability = 100)
     Accident* accident = Accident_generator::generate_accident( weather, 100, targetModule);
     if (accident) {
-        accident->apply_effect(targetModule, resources); // Применяем эффекты (урон модулю, потеря ресурсов)
+        accident->apply_effect(targetModule, resources, colonistGroups); // Применяем эффекты (урон модулю, потеря ресурсов)
         activeAccidents.push_back(accident); // Добавляем в список активных
         cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
         
