@@ -549,7 +549,6 @@ void Colony::generateAccident() {
         // Создаём задачу на ремонт
         Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
         switch (accident->get_type()) {
-            case Accident_type::Fire:
             case Accident_type::Oxyden_leakege:
             case Accident_type::Brake_water_system:
                 taskType = TASK_EMERGENCY;  // аварийные работы
