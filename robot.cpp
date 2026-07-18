@@ -195,11 +195,9 @@ void Robot::repair(double repair_amount) {
     if (state == ROBOT_STATE_DESTROYED) {
         return;
     }
-
     wear_level = max(0.0, wear_level - repair_amount);
     state = ROBOT_STATE_MAINTENANCE;
     if (wear_level < 30) {
-        state = ROBOT_STATE_WAITING_FOR_TASK;
         cout << "Робот " << id << " отремонтирован (износ " << wear_level << "%)" << endl;
     }
 }

@@ -11,6 +11,8 @@
 #include <memory>
 using namespace std;
 
+class Robot;
+
 
 // Перечисление состояний модуля
 enum class ModuleState {
@@ -184,17 +186,19 @@ public:
 // 9. Ремонтный цех
 class RepairBay : public ColonyModule {
 private:
+    vector<Robot*> robotsInRepair; // список роботов в ремонте (вместо счётчика)
     int repairCapacity;           // сколько роботов можно чинить одновременно
-    int robotsInRepair;           // сколько роботов сейчас в ремонте
-    int repairSpeed;              // сколько здоровья восстанавливается за день
+    int repairSpeed;              // сколько здоровья восстанавливается за шаг
     
 public:
     RepairBay(int id, string name, int capacity = 3);
-    bool acceptRobotForRepair();   // Принять робота в ремонт
-    int repairRobot();         // Отремонтировать робота (возвращает количество восстановленного здоровья)
-    bool hasCapacity() const { return robotsInRepair < repairCapacity; } // Есть ли свободное место?
-    int getRobotsInRepair() const { return robotsInRepair; }
+    bool acceptRobotForRepair(Robot* robot);  // Принять робота в ремонт
+    int repairAllRobots();         // Отремонтировать робота (возвращает количество восстановленного здоровья)
+    bool hasCapacity() const { return robotsInRepair.size() < repairCapacity; } // Есть ли свободное место?
+    int getRobotsInRepair() const { return robotsInRepair.size(); }
     int getRepairCapacity() const { return repairCapacity; }
+    const vector<Robot*>& getRobotsInRepairList() const { return robotsInRepair; } // Получить список роботов в ремонте
+    void removeRobotFromRepair(Robot* robot);// Удалить робота из списка (когда ремонт завершён)
 };
 
 #endif //MYPROJECT_MODULES_H

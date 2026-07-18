@@ -53,6 +53,8 @@ public:
     void generateAccident();
     void updateActiveAccidents();
 
+    void repairRobotsInBay();
+
     // доп задания 12,13,14
     void save(const string& file_name) const;
     void download(const string& file_name);
