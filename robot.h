@@ -16,6 +16,11 @@ using namespace std;
  */
 class Robot {
 private:
+    vector<int> currentPath;      // Список ID модулей (маршрут)
+    int pathIndex;                // Текущий шаг в маршруте
+    ColonyModule* targetModule;   // Конечная цель (модуль, который нужно починить/заселить)
+    bool isMoving;                // Двигается ли робот прямо сейчас
+
     // Идентификатор робота (уникальный номер)
     int id;
     // Тип робота (добывающий, ремонтный, грузовой и т.д.)
@@ -39,6 +44,11 @@ private:
     // Уровень износа (0-100, растёт при работе и падает при обслуживании)
     double wear_level;
 public:
+    void setRoute(const vector<int>& path, ColonyModule* target);
+    void moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules);
+    bool hasArrived() const;
+    vector<int> getCurrentPath() const { return currentPath; }
+    ColonyModule* getTargetModule() const { return targetModule; }
     /*
      * Конструктор робота
      * id - уникальный идентификатор

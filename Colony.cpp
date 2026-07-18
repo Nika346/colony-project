@@ -242,21 +242,31 @@ void Colony::createTransportNetwork(int totalRoutes) {
 
 // Основной шаг симуляции (один час)
 void Colony::tick() {
-    // Обновляем погоду
-
-
-    // 1. ПРОИЗВОДСТВО РЕСУРСОВ
+    // 1. ПРОИЗВОДСТВО РЕСУРСОВ (с проверкой наличия работников)
     for (const auto& mod : modules) {
-        // Пропускаем разрушенные и отключенные модули
+        // Модуль должен работать
         if (!mod->isOperational()) continue;
-
-        for (auto const& [ResType, amount] : mod->getProduction()) {//проходит по словарю, который возращает getProduction, ResType - ключ, amount - значение
+        // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
+        bool hasWorkersHere = false;
+        for (const auto& group : colonistGroups) {
+            // Группа жива, находится в этом модуле и может работать
+            if (group->get_state() != STATE_DEAD &&
+                group->get_count() > 0 &&
+                group->get_opportunity_to_work()) {
+                // Сравниваем типы модулей (группа находится в жилом, а модуль - рабочий)
+                hasWorkersHere = true;
+                break;
+                }
+        }
+        // Если в модуле нет работников, он не производит ресурсы
+        if (!hasWorkersHere) continue;
+        // Если работники есть — производим
+        for (auto const& [ResType, amount] : mod->getProduction()) {
             if (amount > 0) {
-                resources.get_resource(ResType).produce(amount);// добавляем в хранилище произведенные ресурсы
+                resources.get_resource(ResType).produce(amount);
             }
         }
     }
-
     // 2. ПОТРЕБЛЕНИЕ РЕСУРСОВ
     for (const auto& mod : modules) {
         if (!mod->isOperational()) continue;
@@ -307,49 +317,162 @@ void Colony::tick() {
         }
     }
     // 7. ЗАДАЧИ И РОБОТЫ
-    // Создаем задачи на ремонт поврежденных модулей
-    for (const auto& mod : modules) {
-        // Если модуль поврежден (DAMAGED) или отключен (OFFLINE) — нужен ремонт
-        if (mod->getState() == ModuleState::DAMAGED || mod->getState() == ModuleState::OFFLINE) {
-            // Считаем, насколько сильно он сломан (от 0 до 1)
-            double damageLevel = 1.0 - (double(mod->getCurrentHealth()) / mod->getMaxHealth());
-            // Создаем задачу: тип РЕМОНТ, цель - этот модуль, важность модуля, уровень повреждения, сложность 5 часов
-            Task repairTask(TASK_REPAIR, mod.get(), mod->getImportanceLevel(), damageLevel, 5);
-            // Кладем задачу в общую очередь
-            taskQueue.addTask(repairTask);
+    // Проверяем, могут ли роботы двигаться в текущую погоду
+    bool canRobotsMove = weather.get_speed() > 0.0;
+    // Проверка на наличие грузовых роботов в целом
+    bool hasCargoRobot = false;
+    for (const auto& r : robots) {
+        if (r->get_type() == ROBOT_CARGO && r->get_state() != ROBOT_STATE_DESTROYED) {
+            hasCargoRobot = true;
+            break;
         }
     }
-    // Роботы берут задачи из очереди и выполняют
-    for (const auto& robot : robots) {
-        // Если робот не свободен (он уже работает или чинится) — пропускаем
-        if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) {
-            continue;
+        // Анализ всех модулей, если робот есть
+    if (hasCargoRobot) {
+        map<ModuleType, int> jobOpenings;
+        map<ModuleType, vector<ColonyModule*>> modulesByType;
+        for (const auto& mod : modules) {
+            if (!mod->isOperational()) continue;
+            if (mod->getType() == ModuleType::HABITAT) continue;
+            jobOpenings[mod->getType()] += 1;
+            modulesByType[mod->getType()].push_back(mod.get());
         }
-        // Если робот сильно разряжен или сломан — не даем ему новую задачу (он сам решит это в update)
-        if (robot->needs_maintenance()) {
-            continue;
-        }
-        // Проверяем, есть ли задачи в очереди
-        if (!taskQueue.isEmpty()) {
-            // Берем самую срочную задачу
-            Task currentTask = taskQueue.getHighestPriority();
-            // Пытаемся назначить задачу роботу (даем 4 часа на выполнение)
-            if (robot->assign_task(currentTask.getType(), 4, weather)) {
-                cout << "Робот " << robot->get_id() << " взял задачу: "
-                     << task_type_to_str(currentTask.getType()) << endl;
-            } else {
-                cout << "Робот " << robot->get_id() << " не может выполнить эту задачу" << endl;
+        // Проверяем все группы колонистов
+        for (auto& group : colonistGroups) {
+            if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
+            if (group->get_state() == STATE_WORKING && group->get_opportunity_to_work()) continue;
+            ModuleType neededModuleType;
+            bool needsTransfer = false;
+            // Сопоставляем специализацию с типом модуля
+            switch (group->get_specialization()) {
+                case SPEC_MINER:
+                    if (jobOpenings[ModuleType::MINE] > 0) {
+                        neededModuleType = ModuleType::MINE;
+                        needsTransfer = true;
+                    }
+                    break;
+                case SPEC_BIOLOGIST:
+                    if (jobOpenings[ModuleType::GREENHOUSE] > 0) {
+                        neededModuleType = ModuleType::GREENHOUSE;
+                        needsTransfer = true;
+                    }
+                    break;
+                case SPEC_ENGINEER:
+                case SPEC_TECHNICIAN:
+                    if (jobOpenings[ModuleType::SOLAR_POWER] > 0 ||
+                        jobOpenings[ModuleType::NUCLEAR_POWER] > 0 ||
+                        jobOpenings[ModuleType::REPAIR_BAY] > 0 ||
+                        jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
+                        if (jobOpenings[ModuleType::SOLAR_POWER] > 0) {
+                            neededModuleType = ModuleType::SOLAR_POWER;
+                        } else if (jobOpenings[ModuleType::REPAIR_BAY] > 0) {
+                            neededModuleType = ModuleType::REPAIR_BAY;
+                        } else if (jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
+                            neededModuleType = ModuleType::WATER_RECYCLER;
+                        } else {
+                            neededModuleType = ModuleType::NUCLEAR_POWER;
+                        }
+                        needsTransfer = true;
+                    }
+                    break;
+                case SPEC_DOCTOR:
+                    if (jobOpenings[ModuleType::MEDICAL] > 0) {
+                        neededModuleType = ModuleType::MEDICAL;
+                        needsTransfer = true;
+                    }
+                    break;
+                case SPEC_ENERGY_OPERATOR:
+                    if (jobOpenings[ModuleType::SOLAR_POWER] > 0 ||
+                        jobOpenings[ModuleType::NUCLEAR_POWER] > 0) {
+                        neededModuleType = ModuleType::SOLAR_POWER;
+                        needsTransfer = true;
+                    }
+                    break;
+                case SPEC_REGULAR:
+                    if (jobOpenings[ModuleType::MINE] > 0) {
+                        neededModuleType = ModuleType::MINE;
+                        needsTransfer = true;
+                    } else if (jobOpenings[ModuleType::GREENHOUSE] > 0) {
+                        neededModuleType = ModuleType::GREENHOUSE;
+                        needsTransfer = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if (needsTransfer && !modulesByType[neededModuleType].empty()) {
+                // Берём первый подходящий модуль этого типа
+                ColonyModule* targetMod = modulesByType[neededModuleType][0];
+                // Проверяем: если группа уже находится в модуле этого типа, не перевозим её!
+                // (Мы не знаем точного имени модуля, но проверить тип можем)
+                if (group->get_module() == neededModuleType) {
+                    // Группа уже здесь, пропускаем
+                    continue;
+                }
+                ColonyModule* targetMod = modulesByType[neededModuleType][0];
+
+                // Создаём задачу на перевозку этой конкретной группы
+                Task moveTask(TASK_CARGO, targetMod, targetMod->getImportanceLevel(), 1.0, 10);
+                taskQueue.addTask(moveTask);
+
+                jobOpenings[neededModuleType] -= 1;
+                modulesByType[neededModuleType].erase(modulesByType[neededModuleType].begin());
             }
         }
     }
-    // Обновляем состояние каждого робота (тратит энергию, стареет, двигается)
+    // Роботы берут задачи из очереди
+    for (const auto& robot : robots) {
+        // Если робот уже движется — пропускаем (он сам идёт)
+        if (robot->get_state() == ROBOT_STATE_MOVING) continue;
+        // Если робот не свободен — пропускаем
+        if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) {
+            continue;
+        }
+        if (robot->needs_maintenance()) continue;
+        if (!canRobotsMove) continue;
+        if (!taskQueue.isEmpty()) {
+            Task currentTask = taskQueue.getHighestPriority();
+            ColonyModule* targetMod = currentTask.getTargetModule();
+            if (targetMod != nullptr && robot->assign_task(currentTask.getType(), 4, weather)) {
+                // Робот назначил задачу. Теперь ищем путь!
+                vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
+                if (!path.empty()) {
+                    robot->setRoute(path, targetMod);
+                    cout << "Робот " << robot->get_id() << " начал движение к " << targetMod->getName() << endl;
+                }
+                else {
+                    cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
+                }
+            }
+        }
+    }
+    // Двигаем всех роботов, которые находятся в пути
+    for (const auto& robot : robots) {
+        if (robot->get_state() == ROBOT_STATE_MOVING) {
+            // 1. Проверяем, не разрушен ли текущий путь
+            ColonyModule* currentTarget = robot->getTargetModule();
+            if (currentTarget) {
+                vector<int> newPath = findShortestPath(robot->get_module()->getId(), currentTarget->getId(), *robot, weather);
+                if (!newPath.empty()) {
+                    robot->setRoute(newPath, currentTarget); // Обновляем маршрут
+                }
+                else {
+                    cout << "Робот " << robot->get_id() << " потерял путь к цели!" << endl;
+                    robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // Отменяем задачу
+                }
+            }
+            // 2. Делаем один шаг по маршруту
+            robot->moveOneStep(modules);
+        }
+    }
+    // Обновляем состояние каждого робота (тратит энергию, стареет)
     for (const auto& robot : robots) {
         robot->update();
     }
     currentHour++; // Увеличиваем счётчик часов
 }
 // Запуск цикла симуляции на несколько дней
-void Colony::run() {
+void Colony::run(){
     for (int i = 0; i < 5; i++) {
         weather.rand_weather();
         currentHour = 0;
@@ -375,6 +498,7 @@ void Colony::generateAccident() {
         // Создаём задачу на ремонт
         Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
         switch (accident->get_type()) {
+            case Accident_type::Fire:
             case Accident_type::Oxyden_leakege:
             case Accident_type::Brake_water_system:
                 taskType = TASK_EMERGENCY;  // аварийные работы

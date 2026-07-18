@@ -245,3 +245,42 @@ double Robot::get_now_speed(const Weather& weather) const{
     return speed * weather.get_speed();
 }
 
+
+void Robot::setRoute(const vector<int>& path, ColonyModule* target) {
+    currentPath = path;
+    targetModule = target;
+    pathIndex = 0;
+    isMoving = true;
+    state = ROBOT_STATE_MOVING; // Переводим робота в состояние движения
+}
+void Robot::moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules) {
+    if (!isMoving || currentPath.empty() || hasArrived()) return;
+    // Если мы уже находимся в следующем модуле маршрута, переходим к следующему шагу
+    if (current_module->getId() == currentPath[pathIndex]) {
+        pathIndex++;
+        if (hasArrived()) {
+            if (hasArrived()) {
+                state = ROBOT_STATE_WAITING_FOR_TASK; // Прибыли
+                isMoving = false;
+                cout << "Робот " << id << " прибыл в пункт назначения!" << endl;
+                // Если это грузовой робот и он выполняет перевозку
+                if (type == ROBOT_CARGO && current_task == TASK_CARGO) {
+                    cout << "Грузовой робот " << id << " доставил колонистов на рабочее место!" << endl;
+                }
+                return;
+            }
+        }
+    }
+    // Ищем следующий модуль по ID в списке всех модулей колонии
+    int nextModuleId = currentPath[pathIndex];
+    for (const auto& mod : allModules) {
+        if (mod->getId() == nextModuleId) {
+            current_module = mod.get(); // Перемещаем робота в следующий модуль
+            cout << "Робот " << id << " переместился в модуль " << mod->getName() << endl;
+            break;
+        }
+    }
+}
+bool Robot::hasArrived() const {
+    return pathIndex >= currentPath.size();
+}
