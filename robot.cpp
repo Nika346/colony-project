@@ -52,7 +52,7 @@ bool Robot::assign_task(Task_type task, int duration, const Weather& weather) {
         return false;
     }
     // проверка погоды
-    if (task == TASK_REPAIR || task == TASK_EMERGENCY || task == TASK_CARGO || task == TASK_CONSTRUCTION || task == TASK_MINING || task == TASK_EXPLORATION) {
+    if (task == TASK_REPAIR || task == TASK_EMERGENCY || task == TASK_CARGO || task == TASK_MINING) {
         if (weather.get_speed() <= 0.0) {
             cout << "Робот " << id << " не может двигаться из-за погоды (скорость = 0)" << endl;
             return false;
@@ -145,7 +145,7 @@ bool Robot::update() {
         }
     }
     // Если робот свободен или ожидает задачу
-    if (state == ROBOT_STATE_FREE || state == ROBOT_STATE_WAITING_FOR_TASK) {
+    if ( state == ROBOT_STATE_WAITING_FOR_TASK) {
         // Если заряд низкий - отправляем на зарядку
         if (energy_charge < 20) {
             state = ROBOT_STATE_CHARGING;
@@ -217,16 +217,11 @@ bool Robot::can_perform_task(Task_type task) const {
         case ROBOT_MINING:
             return (task == TASK_MINING || task == TASK_CARGO);
         case ROBOT_REPAIR:
-            return (task == TASK_REPAIR || task == TASK_CONSTRUCTION ||
-                    task == TASK_EMERGENCY);
+            return (task == TASK_REPAIR || task == TASK_EMERGENCY);
         case ROBOT_MEDICAL:
             return (task == TASK_MEDICAL);
-        case ROBOT_RESEARCH:
-            return (task == TASK_RESEARCH || task == TASK_EXPLORATION);
-        case ROBOT_EXPLORING:
-            return (task == TASK_EXPLORATION || task == TASK_RESEARCH);
         case ROBOT_CARGO:
-            return (task == TASK_CARGO || task == TASK_CONSTRUCTION);
+            return (task == TASK_CARGO);
         default:
             return false;
     }

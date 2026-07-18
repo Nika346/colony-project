@@ -117,6 +117,11 @@ void ColonyResourceManager::initializeResources() {
         ResourceType::MEDICINES, "Mедекоменты",
         100.0, 0.0, 10.0
     );
+    resources[ResourceType::SPARE_PARTS] = Resource(
+    ResourceType::SPARE_PARTS, "Запасные части",
+    300.0, 0.0, 30.0
+);
+    resources[ResourceType::SPARE_PARTS].setCurrentAmount(150.0);
     resources[ResourceType::MEDICINES].setCurrentAmount(50.0);
     resources[ResourceType::ORE] = Resource(
         ResourceType::ORE, "Руда",

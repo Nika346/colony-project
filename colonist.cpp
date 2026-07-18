@@ -115,16 +115,13 @@ bool ColonistGroup::can_perform_task(Task_type task) const {
     // Проверка соответствия специализации и задачи
     switch (specialization) {
         case SPEC_ENGINEER:
-            return (task == TASK_REPAIR || task == TASK_CONSTRUCTION ||
-                    task == TASK_ENERGY || task == TASK_EMERGENCY);
+            return (task == TASK_REPAIR || task == TASK_ENERGY || task == TASK_EMERGENCY);
         case SPEC_BIOLOGIST:
-            return (task == TASK_GREENHOUSE || task == TASK_RESEARCH);
+            return (task == TASK_GREENHOUSE);
         case SPEC_MINER:
             return (task == TASK_MINING || task == TASK_CARGO);
         case SPEC_DOCTOR:
             return (task == TASK_MEDICAL);
-        case SPEC_RESEARCHER:
-            return (task == TASK_RESEARCH || task == TASK_EXPLORATION);
         case SPEC_ENERGY_OPERATOR:
             return (task == TASK_ENERGY);
         case SPEC_TECHNICIAN:
@@ -132,8 +129,7 @@ bool ColonistGroup::can_perform_task(Task_type task) const {
                     task == TASK_ENERGY || task == TASK_EMERGENCY);
         case SPEC_REGULAR:
             // Обычные жители могут выполнять базовые задачи
-            return (task == TASK_CARGO || task == TASK_CONSTRUCTION ||
-                    task == TASK_GREENHOUSE);
+            return (task == TASK_CARGO || task == TASK_GREENHOUSE);
         default:
             return false;
     }

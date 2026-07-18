@@ -36,11 +36,6 @@ void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceMa
             cout << "Отказ системы очистки воды в модуле " << mod->getName() << "!" << endl;
             break;
 
-        case Accident_type::Fire:
-            mod->takeDamage(force * 8);
-            cout << "Пожар в модуле " << mod->getName() << "!" << endl;
-            break;
-
         case Accident_type::Mine_collapse:
             mod->takeDamage(force * 10);
             cout << "Обрушение в шахте " << mod->getName() << "!" << endl;
@@ -68,19 +63,6 @@ void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceMa
 
         case Accident_type::Damage_robot:
             cout << "Робот повреждён! Требуется ремонт." << endl;
-            break;
-
-        case Accident_type::New_deposit:
-            resourceManager.get_resource(ResourceType::BUILDING_MATERIALS).produce(force * 30);
-            cout << "Обнаружено новое месторождение! Добыто " << force * 30 << " материалов." << endl;
-            break;
-
-        case Accident_type::Successful_research:
-            cout << "Успешное исследование! Эффективность повышена." << endl;
-            break;
-
-        case Accident_type::Communication_failure:
-            cout << "Сбой связи! Временная изоляция." << endl;
             break;
 
         case Accident_type::Meteorite_fall:
@@ -173,19 +155,15 @@ Accident* Accident_generator::generate_accident(const Weather& weather, int prob
             switch (r) {
         case 0: type = Accident_type::Oxyden_leakege; desc = "Утечка кислорода"; urgency = 10; break;
                 case 1: type = Accident_type::Brake_water_system; desc = "Отказ системы воды"; urgency = 9; break;
-                case 2: type = Accident_type::Fire; desc = "Пожар"; urgency = 8; break;
                 case 3: type = Accident_type::Mine_collapse; desc = "Обрушение в шахте"; urgency = 8; break;
                 case 4: type = Accident_type::Illness; desc = "Вспышка болезни"; urgency = 9; break;
                 case 5: type = Accident_type::Damage_robot; desc = "Повреждение робота"; urgency = 6; break;
-                case 6: type = Accident_type::Communication_failure; desc = "Сбой связи"; urgency = 5; break;
                 case 7: type = Accident_type::Break_solar_panel; desc = "Поломка панелей"; urgency = 6; break;
-                case 8: type = Accident_type::Successful_research; desc = "Успешное исследование"; urgency = 2; break;
-                case 9: type = Accident_type::New_deposit; desc = "Новое месторождение"; urgency = 3; break;
             }
             break;
     }
 
-    if (type == Accident_type::New_deposit || type == Accident_type::Successful_research || type == Accident_type::Yield_growth) {
+    if (type == Accident_type::Yield_growth) {
         long_time = 1;
         force = rand() % 3 + 1;
     }

@@ -322,7 +322,7 @@ void Colony::tick() {
     // Роботы берут задачи из очереди и выполняют
     for (const auto& robot : robots) {
         // Если робот не свободен (он уже работает или чинится) — пропускаем
-        if (robot->get_state() != ROBOT_STATE_FREE && robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) {
+        if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) {
             continue;
         }
         // Если робот сильно разряжен или сломан — не даем ему новую задачу (он сам решит это в update)
@@ -375,7 +375,6 @@ void Colony::generateAccident() {
         // Создаём задачу на ремонт
         Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
         switch (accident->get_type()) {
-            case Accident_type::Fire:
             case Accident_type::Oxyden_leakege:
             case Accident_type::Brake_water_system:
                 taskType = TASK_EMERGENCY;  // аварийные работы

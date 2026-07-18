@@ -12,7 +12,7 @@
 
 using namespace std;
 
-enum class Accident_type {Oxyden_leakege, Break_solar_panel, Damage_transition, Brake_water_system, Fire, Mine_collapse, Illness, Damage_robot, New_deposit, Successful_research, Communication_failure, Meteorite_fall, Sudden_storm, Yield_growth};
+enum class Accident_type {Oxyden_leakege, Break_solar_panel, Damage_transition, Brake_water_system, Mine_collapse, Illness, Damage_robot, Meteorite_fall, Sudden_storm, Yield_growth};
 //кислород, панели, переход, вода, огонь, обрушение шахты, повреждение робота, новое месторождение, успешное исслелование, сбой связи, падение метеорита, внезапная буря, рост урожайности
 
 class Accident{
