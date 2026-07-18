@@ -346,6 +346,30 @@ void Colony::tick() {
     for (const auto& robot : robots) {
         robot->update();
     }
+    // ОТПРАВЛЯЕМ ПОВРЕЖДЁННЫХ РОБОТОВ В РЕМЦЕХ
+     // Находим все ремонтные цеха
+    vector<RepairBay*> repairBays;
+    for (const auto& mod : modules) {
+        if (mod->getType() == ModuleType::REPAIR_BAY && mod->isOperational()) {
+            repairBays.push_back(dynamic_cast<RepairBay*>(mod.get()));
+        }
+    }
+    // Ищем роботов с высоким износом, Если износ > 70% — отправляем в ремонт
+    for (auto& robot : robots) {
+        // Пропускаем уже ремонтирующихся или уничтоженных
+        if (robot->get_state() != ROBOT_STATE_MAINTENANCE && robot->get_state() != ROBOT_STATE_DESTROYED && robot->get_wear_level() > 70){
+            // Ищем цех со свободным местом
+            for (auto* bay : repairBays) {
+                if (bay->hasCapacity()) {
+                    bay->acceptRobotForRepair(robot.get());
+                    break;
+                }
+            }
+        }
+    }
+    // РЕМОНТИРУЕМ РОБОТОВ В ЦЕХЕ
+    repairRobotsInBay();
+
     currentHour++; // Увеличиваем счётчик часов
 }
 // Запуск цикла симуляции на несколько дней
@@ -409,6 +433,18 @@ void Colony::updateActiveAccidents() {
             // Авария ещё активна — переходим к следующей
             ++it;
         }
+    }
+}
+
+void Colony::repairRobotsInBay() {
+    // Находим все ремонтные цеха
+    for (const auto& mod : modules) {
+        if (mod->getType() != ModuleType::REPAIR_BAY) continue;
+        if (!mod->isOperational()) continue;
+        RepairBay* bay = dynamic_cast<RepairBay*>(mod.get());
+        if (!bay) continue;
+        // Ремонтируем всех роботов в этом цехе
+        int repaired = bay->repairAllRobots();
     }
 }
 

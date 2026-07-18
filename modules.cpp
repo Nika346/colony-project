@@ -2,7 +2,10 @@
 // Created by Вероника on 06.07.2026.
 //
 #include "Modules.h"
+#include "robot.h"
+#include "enum_col_rob.h"
 #include <iostream>
+#include <algorithm>
 using namespace std;
 ColonyModule::ColonyModule(int id, string name, ModuleType type,
                            int maxHealth, int importance)
@@ -165,21 +168,55 @@ void MedicalModule::treatPatients(int count) {
 // RepairBay
 RepairBay::RepairBay(int id, string name, int capacity)
     : ColonyModule(id, name, ModuleType::REPAIR_BAY, 90, 8),
-      repairCapacity(capacity), robotsInRepair(0), repairSpeed(30) {
+      repairCapacity(capacity), robotsInRepair(), repairSpeed(30) {
     setConsumption(ResourceType::ENERGY, 12.0);
     setConsumption(ResourceType::SPARE_PARTS, 2.0);
 }
-bool RepairBay::acceptRobotForRepair() {
-    if (robotsInRepair >= repairCapacity) {
+bool RepairBay::acceptRobotForRepair(Robot* robot) {
+    if (!robot) return false;
+    if (robotsInRepair.size() >= repairCapacity) {
         return false;  // Нет места
     }
-    robotsInRepair++;
+    robot->set_state(ROBOT_STATE_MAINTENANCE);
+    robotsInRepair.push_back(robot);
+    cout << "Робот принят в ремонтный цех. Всего в ремонте: "<< robotsInRepair.size() << "/" << repairCapacity << endl;
     return true;
 }
-int RepairBay::repairRobot() {
-    if (robotsInRepair == 0) return 0;
-    robotsInRepair--;    // Один робот отремонтирован — отпускаем его
-    return repairSpeed;  // Возвращаем, сколько здоровья восстановили
+int RepairBay::repairAllRobots() {
+    if (robotsInRepair.empty()) return 0;
+    int repairedCount = 0;
+    // Идём по списку роботов и ремонтируем каждого
+    for (auto it = robotsInRepair.begin(); it != robotsInRepair.end(); ) {
+        Robot* robot = *it;
+        // Уменьшаем износ на repairSpeed
+        double newWear = max(0.0, robot->get_wear_level() - repairSpeed);
+        robot->repair(repairSpeed);  // Вызываем метод робота
+        // Если износ стал достаточно низким — отпускаем робота
+        if (newWear < 30) {
+            // МЕНЯЕМ СТАТУС НА "ОЖИДАЕТ ЗАДАЧУ"
+            robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);    
+            it = robotsInRepair.erase(it);  // Удаляем из списка
+            repairedCount++;
+        } else {
+            ++it;  // Робот остаётся в ремонте
+        }
+    }
+    return repairedCount;
+}
+bool RepairBay::acceptRobotForRepair(Robot* robot) {
+    if (!robot) return false;
+    if (robotsInRepair.size() >= repairCapacity) {
+        return false;  // Нет места
+    }
+    robotsInRepair.push_back(robot);
+    return true;
+}
+void RepairBay::removeRobotFromRepair(Robot* robot) {
+    if (!robot) return;
+    auto it = find(robotsInRepair.begin(), robotsInRepair.end(), robot);
+    if (it != robotsInRepair.end()) {
+        robotsInRepair.erase(it);
+    }
 }
 
 
