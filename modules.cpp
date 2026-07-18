@@ -2,6 +2,7 @@
 // Created by Вероника on 06.07.2026.
 //
 #include "Modules.h"
+#include "colonist.h"
 #include "robot.h"
 #include "enum_col_rob.h"
 #include <iostream>
@@ -161,9 +162,37 @@ MedicalModule::MedicalModule(int id, string name)
     setConsumption(ResourceType::ENERGY, 8.0);
     setConsumption(ResourceType::MEDICINES, 0.5);
 }
-void MedicalModule::treatPatients(int count) {
-    patientsCount = max(0, patientsCount - count);
+
+void MedicalModule::add_patient(shared_ptr<ColonistGroup> group) {
+    patients.push_back(group);
 }
+
+void MedicalModule::treat_patients() {
+    for (auto it = patients.begin(); it != patients.end(); ) {
+        auto group = *it;
+        if (group->get_state() == STATE_DEAD || group->get_count() == 0) {
+            it = patients.erase(it);
+            continue;
+        }
+        double newHealth = min(100.0, group->get_health() + 2.0);
+        group->set_health(newHealth);
+        if (newHealth >= 100.0) {
+            group->set_state(STATE_WAITING);
+            group->set_opportunity_to_work(true);
+            if (group->get_start_module()) {
+                group->move_to_module(group->get_start_module());
+            }
+            it = patients.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+bool MedicalModule::has_patients() const {
+    return !patients.empty();
+}
+
 
 // RepairBay
 RepairBay::RepairBay(int id, string name, int capacity)
