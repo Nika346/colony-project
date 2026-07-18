@@ -753,6 +753,17 @@ void Colony::show_graph(){
     }
 }
 
+void Colony::process_medical_modules() {
+    for (auto& mod : modules) {
+        if (mod->getType() == ModuleType::MEDICAL) {
+            MedicalModule* med = dynamic_cast<MedicalModule*>(mod.get());
+            if (med) {
+                med->treat_patients();
+            }
+        }
+    }
+}
+
 // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
 shared_ptr<ColonyModule> Colony::findModuleById(int id) const { // Найти модуль по ID
     for (const auto& mod : modules) { //mod - умный указатель на модуль, проходит по всему вектору modules
