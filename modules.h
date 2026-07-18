@@ -180,7 +180,6 @@ private:
     vector<shared_ptr<ColonistGroup>> patients;
 public:
     MedicalModule(int id, string name);
-    void treatPatients(int count);
     int getPatientsCount() const { return patientsCount; }
     void addPatient(int count) { patientsCount += count; }
     void add_patient(shared_ptr<ColonistGroup> group);
