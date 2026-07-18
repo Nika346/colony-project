@@ -197,13 +197,13 @@ bool MedicalModule::has_patients() const {
 // RepairBay
 RepairBay::RepairBay(int id, string name, int capacity)
     : ColonyModule(id, name, ModuleType::REPAIR_BAY, 90, 8),
-      repairCapacity(capacity), robotsInRepair(), repairSpeed(30) {
+      robotsInRepair(), repairCapacity(capacity), repairSpeed(30) {
     setConsumption(ResourceType::ENERGY, 12.0);
     setConsumption(ResourceType::SPARE_PARTS, 2.0);
 }
 bool RepairBay::acceptRobotForRepair(Robot* robot) {
     if (!robot) return false;
-    if (robotsInRepair.size() >= repairCapacity) {
+    if (robotsInRepair.size() >= static_cast<size_t>(repairCapacity)) {
         return false;  // Нет места
     }
     robot->set_state(ROBOT_STATE_MAINTENANCE);
@@ -232,14 +232,7 @@ int RepairBay::repairAllRobots() {
     }
     return repairedCount;
 }
-bool RepairBay::acceptRobotForRepair(Robot* robot) {
-    if (!robot) return false;
-    if (robotsInRepair.size() >= repairCapacity) {
-        return false;  // Нет места
-    }
-    robotsInRepair.push_back(robot);
-    return true;
-}
+
 void RepairBay::removeRobotFromRepair(Robot* robot) {
     if (!robot) return;
     auto it = find(robotsInRepair.begin(), robotsInRepair.end(), robot);
