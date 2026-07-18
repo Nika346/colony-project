@@ -112,7 +112,7 @@ Colony::Colony() : rng(42), currentHour(0) {
         string fullGroupName = groupName + " " + to_string(i + 1);
         colonistGroups.push_back(make_shared<ColonistGroup>(
             fullGroupName, spec, personCount,
-            targetModule->getType(), TASK_MAINTENANCE,
+            targetModule, TASK_MAINTENANCE,
             100.0, 0.0, Resources_consumption()
         ));
         cout << "Группа " << fullGroupName << " (" << personCount << " чел.) создана в модуле "
@@ -288,6 +288,10 @@ void Colony::tick() {
     }
     // 4. Обновление активных аварий
     updateActiveAccidents();
+
+    // лечение в медицинских модулях
+    process_medical_modules();
+    
     // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
     vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     for (ResourceType type : types) {
@@ -518,6 +522,29 @@ void Colony::generateAccident() {
         accident->apply_effect(targetModule, resources, colonistGroups); // Применяем эффекты (урон модулю, потеря ресурсов)
         activeAccidents.push_back(accident); // Добавляем в список активных
         cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
+        if (accident->get_type() == Accident_type::Illness) {
+            MedicalModule* medModule = nullptr;
+            for (auto& mod : modules) {
+                if (mod->getType() == ModuleType::MEDICAL) {
+                    medModule = dynamic_cast<MedicalModule*>(mod.get());
+                    break;
+                }
+            }
+            if (medModule) {
+                for (auto& group : colonistGroups) {
+                    if (group->get_state() == STATE_TREATMENT && group->get_health() < 30 && group->get_count() > 0 && group->get_end_module() != medModule) {
+                            if (!group->get_start_module()) {
+                                group->set_start_module(group->get_end_module());
+                            }
+                        group->move_to_module(medModule);
+                        medModule->add_patient(group);
+                        cout << "Группа " << group->get_group_id() << " направлена в медблок." << endl;
+                        }
+                    }
+            } else {
+                cout << "Нет медицинского модуля для лечения!" << endl;
+            }
+        }
         
         // Создаём задачу на ремонт
         Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
