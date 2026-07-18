@@ -9,6 +9,7 @@
 #include "resources.h"
 #include <iostream>
 #include <string>
+#include <algorithm>
 using namespace std;
  // Структура для хранения норм потребления ресурсов одним колонистом
  // Каждый колонист потребляет кислород, воду и пищу в определенном количестве
@@ -47,6 +48,8 @@ private:
     // Может ли группа работать (зависит от здоровья и усталости)
     bool opportunity_to_work;
     Resources_consumption consumptionRatePerPerson;
+    ColonyModule* start_module;
+    ColonyModule* end_module;
 
 public:
      // Конструктор группы колонистов
@@ -60,7 +63,7 @@ public:
      // consumption - нормы потребления ресурсов
 
     ColonistGroup(string& group_id, Colonist_spec specialization, int count,
-                  ModuleType current_module, Task_type current_task,
+                  ColonyModule* moduleptr, Task_type current_task,
                   double health = 100.0, double fatigue = 0.0,
                   const Resources_consumption& consumption = Resources_consumption());
 
@@ -87,6 +90,10 @@ public:
     void set_specialization(Colonist_spec spec) { specialization = spec; }
     void set_module(ModuleType current_m) { current_module = current_m; }
     void set_opportunity_to_work(bool opportunity) { opportunity_to_work = opportunity; }
+    void set_start_module(ColonyModule* mod){ start_module = mod; }
+    ColonyModule* get_start_module() const { return start_module; }
+    void move_to_module(ColonyModule* mod);
+    ColonyModule* get_end_module() const { return end_module; }
      //Метод для обновления здоровья колонистов
      //Здоровье снижается при недостатке ресурсов или высоком уровне усталости
      //oxygen_available - достаточно ли кислорода
