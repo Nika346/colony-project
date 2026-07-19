@@ -344,7 +344,7 @@ void Colony::tick() {
         // Проверяем все группы колонистов
         for (auto& group : colonistGroups) {
             if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
-            if (group->get_state() == STATE_WORKING && group->get_opportunity_to_work()<=70) continue;
+            if (group->get_state() == STATE_WORKING && group->get_fatigue() > 70) continue;
             if (group->get_transportRobot() != nullptr) continue;  // Уже перемещаются
             
             ModuleType neededModuleType;
@@ -576,7 +576,7 @@ void Colony::generateAccident() {
     // Генерируем аварию (шанс уже проверили выше, поэтому probability = 100)
     Accident* accident = Accident_generator::generate_accident( weather, 100, targetModule);
     if (accident) {
-        accident->apply_effect(targetModule, resources, colonistGroups); // Применяем эффекты (урон модулю, потеря ресурсов)
+        accident->apply_effect(targetModule, resources, colonistGroups, routes); // Применяем эффекты (урон модулю, потеря ресурсов)
         activeAccidents.push_back(accident); // Добавляем в список активных
         cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
         if (accident->get_type() == Accident_type::Illness) {
