@@ -48,12 +48,9 @@ private:
     // Может ли группа работать (зависит от здоровья и усталости)
     bool opportunity_to_work;
     Resources_consumption consumptionRatePerPerson;
-<<<<<<< HEAD
     Robot* transportRobot;
-=======
     ColonyModule* start_module;
     ColonyModule* end_module;
->>>>>>> c0be1b601d44fb965e3745ba25f8835df9c8fdaa
 
 public:
      // Конструктор группы колонистов
@@ -95,14 +92,12 @@ public:
     void set_specialization(Colonist_spec spec) { specialization = spec; }
     void set_module(ModuleType current_m) { current_module = current_m; }
     void set_opportunity_to_work(bool opportunity) { opportunity_to_work = opportunity; }
-<<<<<<< HEAD
     void set_transportRobot(Robot* r){transportRobot=r;};
-=======
     void set_start_module(ColonyModule* mod){ start_module = mod; }
     ColonyModule* get_start_module() const { return start_module; }
     void move_to_module(ColonyModule* mod);
     ColonyModule* get_end_module() const { return end_module; }
->>>>>>> c0be1b601d44fb965e3745ba25f8835df9c8fdaa
+
      //Метод для обновления здоровья колонистов
      //Здоровье снижается при недостатке ресурсов или высоком уровне усталости
      //oxygen_available - достаточно ли кислорода
