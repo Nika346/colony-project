@@ -62,6 +62,8 @@ public:
     void export_dot(const string& file_name) const;
     void show_graph();
 
+    void process_medical_modules();
+
 
     // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
     // Основной метод: поиск кратчайшего пути между двумя модулями

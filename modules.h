@@ -12,6 +12,7 @@
 using namespace std;
 
 class Robot;
+class ColonistGroup;
 
 
 // Перечисление состояний модуля
@@ -176,11 +177,14 @@ class MedicalModule : public ColonyModule {
 private:
     int healingRate;
     int patientsCount;
+    vector<shared_ptr<ColonistGroup>> patients;
 public:
     MedicalModule(int id, string name);
-    void treatPatients(int count);
     int getPatientsCount() const { return patientsCount; }
     void addPatient(int count) { patientsCount += count; }
+    void add_patient(shared_ptr<ColonistGroup> group);
+    void treat_patients();
+    bool has_patients() const;
 };
 
 // 9. Ремонтный цех

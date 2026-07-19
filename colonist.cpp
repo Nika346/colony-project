@@ -9,7 +9,7 @@ using namespace std;
  * Инициализирует все поля начальными значениями.
  */
 ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int count,
-                             ModuleType current_module, Task_type current_task,
+                             ColonyModule* moduleptr, Task_type current_task,
                              double health, double fatigue,
                              const Resources_consumption& consumption)
     : group_id(group_id),
@@ -19,11 +19,16 @@ ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int
       fatigue(max(0.0, min(100.0, fatigue))), // Усталость в диапазоне 0-100
       state(STATE_WAITING),  // Изначально ожидают назначения
       current_task(current_task),
-      current_module(current_module),
+      current_module(moduleptr ? moduleptr->getType() : ModuleType::HABITAT),
       resources_consumption(consumption),
       opportunity_to_work(true),  // Изначально могут работать
       consumptionRatePerPerson(consumption),
+<<<<<<< HEAD
       transportRobot(nullptr)
+=======
+      start_module(moduleptr),
+      end_module(moduleptr)
+>>>>>>> c0be1b601d44fb965e3745ba25f8835df9c8fdaa
 {
     // Если колонистов нет, состояние - погибшие
     if (count <= 0) {
@@ -174,3 +179,11 @@ void ColonistGroup::remove_colonists(int amount) {
         }
     }
 }
+
+void ColonistGroup::move_to_module(ColonyModule* mod){
+    if (mod) {
+        end_module = mod;
+        current_module = mod->getType();
+    }
+}
+
