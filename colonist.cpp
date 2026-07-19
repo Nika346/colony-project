@@ -23,12 +23,9 @@ ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int
       resources_consumption(consumption),
       opportunity_to_work(true),  // Изначально могут работать
       consumptionRatePerPerson(consumption),
-<<<<<<< HEAD
-      transportRobot(nullptr)
-=======
+      transportRobot(nullptr),
       start_module(moduleptr),
       end_module(moduleptr)
->>>>>>> c0be1b601d44fb965e3745ba25f8835df9c8fdaa
 {
     // Если колонистов нет, состояние - погибшие
     if (count <= 0) {
