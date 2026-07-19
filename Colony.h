@@ -27,6 +27,27 @@ struct PathNode {
     }
 };
 
+// статистика
+struct Statistics {
+    int total_days = 0;
+    int total_hours = 0;
+    int initial_colonists = 0;
+    int current_colonists = 0;
+    int colonists_died = 0;
+    int total_accidents = 0;
+    int total_repairs = 0;
+    int robots_repaired = 0;
+    double food_produced = 0.0;
+    double oxygen_produced = 0.0;
+    double water_produced = 0.0;
+    double energy_produced = 0.0;
+    double food_consumed = 0.0;
+    double oxygen_consumed = 0.0;
+    double water_consumed = 0.0;
+    double energy_consumed = 0.0;
+    double avg_modules_health = 0.0;
+};
+
 class Colony{
 private:
     vector<shared_ptr<Robot>> robots;           // Список всех роботов
@@ -39,6 +60,7 @@ private:
     ColonyResourceManager resources; // Запасы ресурсов
     Weather weather;                 // Погода
     int currentHour;                 // Счётчик часов для вывода в консоль
+    Statistics stats;
 
 public:
     Colony();
@@ -63,6 +85,11 @@ public:
     void show_graph();
 
     void process_medical_modules();
+
+    void reset_statistics();
+    void update_statistics();
+    void print_statistics() const;
+    void save_statistics(const string& file_name) const;
 
 
     // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
