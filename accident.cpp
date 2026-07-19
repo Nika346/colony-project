@@ -1,4 +1,5 @@
 #include "Accident.h"
+#include <cstdlib>
 
 // события
 
@@ -6,7 +7,7 @@ Accident::Accident(Accident_type t, int f, int dur, const string& desc, int urg,
 
 Accident::~Accident() {}
 
-void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceManager, vector<shared_ptr<ColonistGroup>>& colonistGroups) {
+void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceManager, vector<shared_ptr<ColonistGroup>>& colonistGroups, vector<shared_ptr<TransportRoute>>& routes) {
     // Если переданный модуль равен nullptr, берём сохранённый (поле Mod)
     if (!mod) mod = Mod;
     if (!mod) {
@@ -27,7 +28,12 @@ void Accident::apply_effect(ColonyModule* mod, ColonyResourceManager& resourceMa
             break;
 
         case Accident_type::Damage_transition:
-            cout << "Повреждён переход между модулями!" << endl;
+            if (!routes.empty()) {
+                int idx = rand() % routes.size();
+                int damage = force * 5; 
+                routes[idx]->takeDamage(damage);
+                cout << "Повреждён переход между модулями! Прочность: " << routes[idx]->getCurrentHealth()<< "/" << routes[idx]->getMaxHealth() << endl;
+            }
             break;
 
         case Accident_type::Brake_water_system:
