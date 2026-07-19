@@ -264,6 +264,13 @@ void Colony::tick() {
         for (auto const& [ResType, amount] : mod->getProduction()) {
             if (amount > 0) {
                 resources.get_resource(ResType).produce(amount);
+                switch (ResType) {
+                    case ResourceType::FOOD: stats.food_produced += amount; break;
+                    case ResourceType::OXYGEN: stats.oxygen_produced += amount; break;
+                    case ResourceType::WATER: stats.water_produced += amount; break;
+                    case ResourceType::ENERGY: stats.energy_produced += amount; break;
+                    default: break;
+                }
             }
         }
     }  
@@ -278,6 +285,13 @@ void Colony::tick() {
                     mod->setState(ModuleState::OFFLINE);
                     cout << "Час " << currentHour << ": Модуль " << mod->getName() << " отключен (нехватка ресурса)!" << endl;
                     break; // Прерываем проверку для этого модуля
+                }
+                switch (ResType) {
+                    case ResourceType::FOOD: stats.food_consumed += amount; break;
+                    case ResourceType::OXYGEN: stats.oxygen_consumed += amount; break;
+                    case ResourceType::WATER: stats.water_consumed += amount; break;
+                    case ResourceType::ENERGY: stats.energy_consumed += amount; break;
+                    default: break;
                 }
             }
         }
@@ -536,8 +550,8 @@ void Colony::tick() {
     for (const auto& mod : modules) {
         if (mod->getType() == ModuleType::REPAIR_BAY && mod->isOperational()) {
             repairBays.push_back(dynamic_cast<RepairBay*>(mod.get()));
+        }
     }
-}
     // Ищем роботов с высоким износом, Если износ > 70% — отправляем в ремонт
     for (auto& robot : robots) {
         // Пропускаем уже ремонтирующихся или уничтоженных
@@ -553,6 +567,8 @@ void Colony::tick() {
     }
     // РЕМОНТИРУЕМ РОБОТОВ В ЦЕХЕ
     repairRobotsInBay();
+
+    update_statistics();
 
     currentHour++; // Увеличиваем счётчик часов
 }
@@ -578,6 +594,7 @@ void Colony::generateAccident() {
     if (accident) {
         accident->apply_effect(targetModule, resources, colonistGroups, routes); // Применяем эффекты (урон модулю, потеря ресурсов)
         activeAccidents.push_back(accident); // Добавляем в список активных
+        stats.total_accidents++;
         cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
         if (accident->get_type() == Accident_type::Illness) {
             MedicalModule* medModule = nullptr;
@@ -624,6 +641,7 @@ void Colony::generateAccident() {
         
         // Добавляем в приоритетную очередь
         taskQueue.addTask(task);
+        stats.total_repairs++;
     }
 }
 
@@ -652,6 +670,7 @@ void Colony::repairRobotsInBay() {
         if (!bay) continue;
         // Ремонтируем всех роботов в этом цехе
         int repaired = bay->repairAllRobots();
+        stats.robots_repaired += repaired;
     }
 }
 
@@ -818,6 +837,89 @@ void Colony::process_medical_modules() {
             }
         }
     }
+}
+
+
+void Colony::reset_statistics(){
+    stats = Statistics();
+    stats.initial_colonists = 0;
+    for (const auto& group : colonistGroups) {
+        stats.initial_colonists += group->get_count();
+    }
+    stats.current_colonists = stats.initial_colonists;
+}
+
+void Colony::update_statistics(){
+    stats.current_colonists = 0;
+    for (const auto& group : colonistGroups) {
+        stats.current_colonists += group->get_count();
+    }
+    stats.colonists_died = stats.initial_colonists - stats.current_colonists;
+
+    double total_health = 0.0;
+    int module_count = 0;
+    for (const auto& mod : modules) {
+        if (mod->isOperational()) {
+            total_health += mod->getCurrentHealth();
+            module_count++;
+        }
+    }
+    stats.avg_modules_health = (module_count > 0) ? total_health / module_count : 0.0;
+
+    stats.total_hours++;
+    if (stats.total_hours % 24 == 0) stats.total_days++;
+}
+
+void Colony::print_statistics() const {
+    cout << "\n========== СТАТИСТИКА КОЛОНИИ ==========\n";
+    cout << "Количество дней симуляции: " << stats.total_days << endl;
+    cout << "Количество часов: " << stats.total_hours << endl;
+    cout << "Начальное количество колонистов: " << stats.initial_colonists << endl;
+    cout << "Текущее количество колонистов: " << stats.current_colonists << endl;
+    cout << "Количество умерших колонистов: " << stats.colonists_died << endl;
+    cout << "Количество аварий: " << stats.total_accidents << endl;
+    cout << "Количество ремонтов модулей: " << stats.total_repairs << endl;
+    cout << "Количество отремонтированных роботов: " << stats.robots_repaired << endl;
+    cout << "Среднее здоровье модулей: " << stats.avg_modules_health << endl;
+    cout << "\n========== ПРОИЗВОДСТВО РЕСУРСОВ ==========\n";
+    cout << "Количество произведенной пищи: " << stats.food_produced << endl;
+    cout << "Количество произведенного кислорода: " << stats.oxygen_produced << endl;
+    cout << "Количество произведенной воды: " << stats.water_produced << endl;
+    cout << "Количество произведенной энергии: " << stats.energy_produced << endl;
+    cout << "\n========== ПОТРЕБЛЕНИЕ РЕСУРСОВ ==========\n";
+    cout << "Количество потребленной пищи: " << stats.food_consumed << endl;
+    cout << "Количество потребленного кислорода: " << stats.oxygen_consumed << endl;
+    cout << "Количество потребленной воды: " << stats.water_consumed << endl;
+    cout << "Количество потребленной энергии: " << stats.energy_consumed << endl;
+    cout << "============================================\n";
+}
+
+
+void Colony::save_statistics(const string& file_name) const {
+    ofstream out(file_name);
+    if (!out) {
+        cerr << "Ошибка открытия файла!" << endl;
+        return;
+    }
+    out << "Количество дней симуляции: " << stats.total_days << endl;
+    out << "Количество часов: " << stats.total_hours << endl;
+    out << "Начальное количество колонистов: " << stats.initial_colonists << endl;
+    out << "Текущее количество колонистов: " << stats.current_colonists << endl;
+    out << "Количество умерших колонистов: " << stats.colonists_died << endl;
+    out << "Количество аварий: " << stats.total_accidents << endl;
+    out << "Количество ремонтов модулей: " << stats.total_repairs << endl;
+    out << "Количество отремонтированных роботов: " << stats.robots_repaired << endl;
+    out << "Среднее здоровье модулей: " << stats.avg_modules_health << endl;
+    out << "Количество произведенной пищи: " << stats.food_produced << endl;
+    out << "Количество произведенного кислорода: " << stats.oxygen_produced << endl;
+    out << "Количество произведенной воды: " << stats.water_produced << endl;
+    out << "Количество произведенной энергии: " << stats.energy_produced << endl;
+    out << "Количество потребленной пищи: " << stats.food_consumed << endl;
+    out << "Количество потребленного кислорода: " << stats.oxygen_consumed << endl;
+    out << "Количество потребленной воды: " << stats.water_consumed << endl;
+    out << "Количество потребленной энергии: " << stats.energy_consumed << endl;
+    out.close();
+    cout << "Статистика сохранена в " << file_name << endl;
 }
 
 // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
