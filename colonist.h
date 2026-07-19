@@ -47,6 +47,7 @@ private:
     // Может ли группа работать (зависит от здоровья и усталости)
     bool opportunity_to_work;
     Resources_consumption consumptionRatePerPerson;
+    Robot* transportRobot;
 
 public:
      // Конструктор группы колонистов
@@ -76,6 +77,7 @@ public:
     bool get_opportunity_to_work() const { return opportunity_to_work; }
     Resources_consumption get_consumption() const { return resources_consumption; }
     Resources_consumption getConsumptionRate() const { return consumptionRatePerPerson; }
+    Robot* get_transportRobot() const {return transportRobot;};
 
     // СЕТТЕРЫ
     void set_group_id(string group_i) { group_id = group_i; }
@@ -87,6 +89,7 @@ public:
     void set_specialization(Colonist_spec spec) { specialization = spec; }
     void set_module(ModuleType current_m) { current_module = current_m; }
     void set_opportunity_to_work(bool opportunity) { opportunity_to_work = opportunity; }
+    void set_transportRobot(Robot* r){transportRobot=r;};
      //Метод для обновления здоровья колонистов
      //Здоровье снижается при недостатке ресурсов или высоком уровне усталости
      //oxygen_available - достаточно ли кислорода

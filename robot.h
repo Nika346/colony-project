@@ -27,6 +27,7 @@ private:
     Robot_type type;
     // Текущий модуль, где находится робот
     ColonyModule* current_module;
+    ColonistGroup* passengers; //группа, которую перевозит робот
     // Текущий заряд энергии (в процентах, 0-100)
     double energy_charge;
     // Максимальный заряд энергии
@@ -49,6 +50,10 @@ public:
     bool hasArrived() const;
     vector<int> getCurrentPath() const { return currentPath; }
     ColonyModule* getTargetModule() const { return targetModule; }
+
+    void setPassengers(ColonistGroup* group); //добавить пассажиров
+    ColonistGroup* getPassengers() const { return passengers; }  //посмотреть пассажиров
+    void dropOffPassengers(); //высадить пассажиров
     /*
      * Конструктор робота
      * id - уникальный идентификатор

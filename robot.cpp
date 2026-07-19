@@ -1,5 +1,6 @@
 // Created by Вероника on 06.07.2026.
 #include "robot.h"
+#include "colonist.h"
 #include <algorithm>  // для std::max, std::min
 #include <cmath>
 #include <climits>
@@ -13,6 +14,9 @@ Robot::Robot(int id, Robot_type type, ColonyModule* current_module,
     : id(id),
       type(type),
       current_module(current_module),
+      passengers(nullptr),
+      currentPath(),
+      pathIndex(0),
       energy_charge(max_energy * 0.9),  // Начинает с 90% заряда
       max_energy(max_energy),
       speed(speed),
@@ -257,17 +261,16 @@ void Robot::moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules) {
     if (current_module->getId() == currentPath[pathIndex]) {
         pathIndex++;
         if (hasArrived()) {
-            if (hasArrived()) {
-                state = ROBOT_STATE_WAITING_FOR_TASK; // Прибыли
-                isMoving = false;
-                cout << "Робот " << id << " прибыл в пункт назначения!" << endl;
-                // Если это грузовой робот и он выполняет перевозку
-                if (type == ROBOT_CARGO && current_task == TASK_CARGO) {
-                    cout << "Грузовой робот " << id << " доставил колонистов на рабочее место!" << endl;
-                }
-                return;
+            state = ROBOT_STATE_WAITING_FOR_TASK; // Прибыли
+            isMoving = false;
+            cout << "Робот " << id << " прибыл в пункт назначения!" << endl;
+            dropOffPassengers();
+            // Если это грузовой робот и он выполняет перевозку
+            if (type == ROBOT_CARGO && current_task == TASK_CARGO) {
+                cout << "Грузовой робот " << id << " доставил колонистов на рабочее место!" << endl;
             }
-        }
+            return;
+        }    
     }
     // Ищем следующий модуль по ID в списке всех модулей колонии
     int nextModuleId = currentPath[pathIndex];
@@ -281,4 +284,23 @@ void Robot::moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules) {
 }
 bool Robot::hasArrived() const {
     return pathIndex >= currentPath.size();
+}
+
+
+void Robot::setPassengers(ColonistGroup* group) {
+    passengers = group;
+    if (group) {
+        cout << "Робот " << id << " взял на борт группу " << group->get_group_id() << endl;
+    }
+}
+
+void Robot::dropOffPassengers() {
+    if (passengers) {
+        cout << "Робот " << id << " высадил группу "<< passengers->get_group_id() << " в модуле " << current_module->getName() << endl;
+        passengers->set_module(current_module->getType());
+        passengers->set_state(STATE_WAITING);
+        passengers->set_opportunity_to_work(true);
+        passengers->set_transportRobot(nullptr);
+        passengers = nullptr;
+    }
 }

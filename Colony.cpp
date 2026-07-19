@@ -255,7 +255,7 @@ void Colony::tick() {
                 group->get_opportunity_to_work()) {
                 // Сравниваем типы модулей (группа находится в жилом, а модуль - рабочий)
                 hasWorkersHere = true;
-                break;
+                group->update_fatigue(true);
                 }
         }
         // Если в модуле нет работников, он не производит ресурсы
@@ -266,7 +266,7 @@ void Colony::tick() {
                 resources.get_resource(ResType).produce(amount);
             }
         }
-    }
+    }  
     // 2. ПОТРЕБЛЕНИЕ РЕСУРСОВ
     for (const auto& mod : modules) {
         if (!mod->isOperational()) continue;
@@ -327,8 +327,8 @@ void Colony::tick() {
             break;
         }
     }
-        // Анализ всех модулей, если робот есть
-    if (hasCargoRobot) {
+        // Анализ всех модулей, если робот есть и он может двигаться
+    if (hasCargoRobot && canRobotsMove) {
         map<ModuleType, int> jobOpenings;
         map<ModuleType, vector<ColonyModule*>> modulesByType;
         for (const auto& mod : modules) {
@@ -340,77 +340,82 @@ void Colony::tick() {
         // Проверяем все группы колонистов
         for (auto& group : colonistGroups) {
             if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
-            if (group->get_state() == STATE_WORKING && group->get_opportunity_to_work()) continue;
+            if (group->get_state() == STATE_WORKING && group->get_opportunity_to_work()<=70) continue;
+            if (group->get_transportRobot() != nullptr) continue;  // Уже перемещаются
+            
             ModuleType neededModuleType;
             bool needsTransfer = false;
             // Сопоставляем специализацию с типом модуля
-            switch (group->get_specialization()) {
-                case SPEC_MINER:
-                    if (jobOpenings[ModuleType::MINE] > 0) {
-                        neededModuleType = ModuleType::MINE;
-                        needsTransfer = true;
-                    }
-                    break;
-                case SPEC_BIOLOGIST:
-                    if (jobOpenings[ModuleType::GREENHOUSE] > 0) {
-                        neededModuleType = ModuleType::GREENHOUSE;
-                        needsTransfer = true;
-                    }
-                    break;
-                case SPEC_ENGINEER:
-                case SPEC_TECHNICIAN:
-                    if (jobOpenings[ModuleType::SOLAR_POWER] > 0 ||
-                        jobOpenings[ModuleType::NUCLEAR_POWER] > 0 ||
-                        jobOpenings[ModuleType::REPAIR_BAY] > 0 ||
-                        jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
-                        if (jobOpenings[ModuleType::SOLAR_POWER] > 0) {
-                            neededModuleType = ModuleType::SOLAR_POWER;
-                        } else if (jobOpenings[ModuleType::REPAIR_BAY] > 0) {
-                            neededModuleType = ModuleType::REPAIR_BAY;
-                        } else if (jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
-                            neededModuleType = ModuleType::WATER_RECYCLER;
-                        } else {
-                            neededModuleType = ModuleType::NUCLEAR_POWER;
+            // 2. ПРИОРИТЕТ 2: УСТАВШИЕ -> В ЖИЛОЙ МОДУЛЬ
+            if (group->get_fatigue() > 70 && group->get_state() == STATE_WORKING) {
+                neededModuleType = ModuleType::HABITAT;
+                needsTransfer = true;
+                }
+            // 3. ОБЫЧНАЯ ЛОГИКА: ОВДЫХНУВШИЕ -> НА РАБОТУ (код напарника)
+             else if(group->get_state() == STATE_WAITING &&  group->get_fatigue() < 30) {
+                switch (group->get_specialization()) {
+                    case SPEC_MINER:
+                        if (jobOpenings[ModuleType::MINE] > 0) {
+                            neededModuleType = ModuleType::MINE;
+                            needsTransfer = true;
                         }
-                        needsTransfer = true;
-                    }
-                    break;
-                case SPEC_DOCTOR:
-                    if (jobOpenings[ModuleType::MEDICAL] > 0) {
-                        neededModuleType = ModuleType::MEDICAL;
-                        needsTransfer = true;
-                    }
-                    break;
-                case SPEC_ENERGY_OPERATOR:
-                    if (jobOpenings[ModuleType::SOLAR_POWER] > 0 ||
-                        jobOpenings[ModuleType::NUCLEAR_POWER] > 0) {
-                        neededModuleType = ModuleType::SOLAR_POWER;
-                        needsTransfer = true;
-                    }
-                    break;
-                case SPEC_REGULAR:
-                    if (jobOpenings[ModuleType::MINE] > 0) {
-                        neededModuleType = ModuleType::MINE;
-                        needsTransfer = true;
-                    } else if (jobOpenings[ModuleType::GREENHOUSE] > 0) {
-                        neededModuleType = ModuleType::GREENHOUSE;
-                        needsTransfer = true;
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    case SPEC_BIOLOGIST:
+                        if (jobOpenings[ModuleType::GREENHOUSE] > 0) {
+                            neededModuleType = ModuleType::GREENHOUSE;
+                            needsTransfer = true;
+                        }
+                        break;
+                    case SPEC_ENGINEER:
+                    case SPEC_TECHNICIAN:
+                        if (jobOpenings[ModuleType::SOLAR_POWER] > 0 ||
+                            jobOpenings[ModuleType::NUCLEAR_POWER] > 0 ||
+                            jobOpenings[ModuleType::REPAIR_BAY] > 0 ||
+                            jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
+                            if (jobOpenings[ModuleType::SOLAR_POWER] > 0) {
+                                neededModuleType = ModuleType::SOLAR_POWER;
+                            } else if (jobOpenings[ModuleType::REPAIR_BAY] > 0) {
+                                neededModuleType = ModuleType::REPAIR_BAY;
+                            } else if (jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
+                                neededModuleType = ModuleType::WATER_RECYCLER;
+                            } else {
+                                neededModuleType = ModuleType::NUCLEAR_POWER;
+                            }
+                            needsTransfer = true;
+                        }
+                        break;
+                    case SPEC_DOCTOR:
+                        if (jobOpenings[ModuleType::MEDICAL] > 0) {
+                            neededModuleType = ModuleType::MEDICAL;
+                            needsTransfer = true;
+                        }
+                        break;
+                    case SPEC_ENERGY_OPERATOR:
+                        if (jobOpenings[ModuleType::SOLAR_POWER] > 0 ||
+                            jobOpenings[ModuleType::NUCLEAR_POWER] > 0) {
+                            neededModuleType = ModuleType::SOLAR_POWER;
+                            needsTransfer = true;
+                        }
+                        break;
+                    case SPEC_REGULAR:
+                        if (jobOpenings[ModuleType::MINE] > 0) {
+                            neededModuleType = ModuleType::MINE;
+                            needsTransfer = true;
+                        } else if (jobOpenings[ModuleType::GREENHOUSE] > 0) {
+                            neededModuleType = ModuleType::GREENHOUSE;
+                            needsTransfer = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
             if (needsTransfer && !modulesByType[neededModuleType].empty()) {
+                if (group->get_module() == neededModuleType) continue;// Группа уже здесь, пропускаем
+                
                 // Берём первый подходящий модуль этого типа
                 ColonyModule* targetMod = modulesByType[neededModuleType][0];
-                // Проверяем: если группа уже находится в модуле этого типа, не перевозим её!
-                // (Мы не знаем точного имени модуля, но проверить тип можем)
-                if (group->get_module() == neededModuleType) {
-                    // Группа уже здесь, пропускаем
-                    continue;
-                }
-                ColonyModule* targetMod = modulesByType[neededModuleType][0];
-
+                
                 // Создаём задачу на перевозку этой конкретной группы
                 Task moveTask(TASK_CARGO, targetMod, targetMod->getImportanceLevel(), 1.0, 10);
                 taskQueue.addTask(moveTask);
@@ -425,29 +430,77 @@ void Colony::tick() {
         // Если робот уже движется — пропускаем (он сам идёт)
         if (robot->get_state() == ROBOT_STATE_MOVING) continue;
         // Если робот не свободен — пропускаем
-        if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) {
-            continue;
-        }
+        if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) continue;
         if (robot->needs_maintenance()) continue;
         if (!canRobotsMove) continue;
         if (!taskQueue.isEmpty()) {
             Task currentTask = taskQueue.getHighestPriority();
             ColonyModule* targetMod = currentTask.getTargetModule();
             if (targetMod != nullptr && robot->assign_task(currentTask.getType(), 4, weather)) {
-                // Робот назначил задачу. Теперь ищем путь!
-                vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
-                if (!path.empty()) {
-                    robot->setRoute(path, targetMod);
-                    cout << "Робот " << robot->get_id() << " начал движение к " << targetMod->getName() << endl;
-                }
-                else {
-                    cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
+                // Находим группу, которую нужно везти к этому модулю
+                ColonistGroup* groupToTransport = nullptr;
+                if (robot->get_type() == ROBOT_CARGO && currentTask.getType() == TASK_CARGO) {
+                    for (auto& group : colonistGroups) {
+                    if (group->get_module() != targetMod->getType() &&group->get_state() != STATE_DEAD &&group->get_transportRobot() == nullptr) {
+                        // Проверяем, подходит ли специализация
+                        bool matches = false;
+                        switch (group->get_specialization()) {
+                            case SPEC_MINER:
+                                matches = (targetMod->getType() == ModuleType::MINE);
+                                break;
+                            case SPEC_BIOLOGIST:
+                                matches = (targetMod->getType() == ModuleType::GREENHOUSE);
+                                break;
+                            case SPEC_ENGINEER:
+                            case SPEC_TECHNICIAN:
+                                matches = (targetMod->getType() == ModuleType::REPAIR_BAY ||
+                                          targetMod->getType() == ModuleType::SOLAR_POWER || 
+                                          targetMod->getType() == ModuleType::NUCLEAR_POWER ||
+                                          targetMod->getType() == ModuleType::WATER_RECYCLER);
+                                break;
+                            case SPEC_DOCTOR:
+                                matches = (targetMod->getType() == ModuleType::MEDICAL);
+                                break;
+                            case SPEC_ENERGY_OPERATOR:
+                                matches = (targetMod->getType() == ModuleType::SOLAR_POWER ||
+                                          targetMod->getType() == ModuleType::NUCLEAR_POWER);
+                                break;
+                            case SPEC_REGULAR:
+                                matches = (targetMod->getType() == ModuleType::MINE ||
+                                          targetMod->getType() == ModuleType::GREENHOUSE);
+                                break;
+                            default:
+                                break;
+                        }
+                    if (matches) {
+                            groupToTransport = group.get();
+                            break;
+                        }
+                    }
                 }
             }
+            // Робот назначил задачу. Теперь ищем путь!
+            vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
+            if (!path.empty()) {
+                robot->setRoute(path, targetMod);
+                if (groupToTransport) {
+                    robot->setPassengers(groupToTransport);
+                    groupToTransport->set_transportRobot(robot.get());
+                    groupToTransport->set_state(STATE_MOVING);
+                    groupToTransport->set_opportunity_to_work(false);
+                    cout << "Группа " << groupToTransport->get_group_id() << " села в робота " << robot->get_id() << endl;
+                }
+                cout << "Робот " << robot->get_id() << " начал движение к " << targetMod->getName() << endl;
+            }
+            else {
+                cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
+            }   
         }
     }
+}
+
     // Двигаем всех роботов, которые находятся в пути
-    for (const auto& robot : robots) {
+    for (auto& robot : robots) {
         if (robot->get_state() == ROBOT_STATE_MOVING) {
             // 1. Проверяем, не разрушен ли текущий путь
             ColonyModule* currentTarget = robot->getTargetModule();
@@ -459,6 +512,10 @@ void Colony::tick() {
                 else {
                     cout << "Робот " << robot->get_id() << " потерял путь к цели!" << endl;
                     robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // Отменяем задачу
+                    if (robot->getPassengers()) {
+                    robot->getPassengers()->set_transportRobot(nullptr);
+                    robot->getPassengers()->set_state(STATE_WAITING);
+                    }
                 }
             }
             // 2. Делаем один шаг по маршруту
@@ -475,8 +532,8 @@ void Colony::tick() {
     for (const auto& mod : modules) {
         if (mod->getType() == ModuleType::REPAIR_BAY && mod->isOperational()) {
             repairBays.push_back(dynamic_cast<RepairBay*>(mod.get()));
-        }
     }
+}
     // Ищем роботов с высоким износом, Если износ > 70% — отправляем в ремонт
     for (auto& robot : robots) {
         // Пропускаем уже ремонтирующихся или уничтоженных
@@ -522,7 +579,6 @@ void Colony::generateAccident() {
         // Создаём задачу на ремонт
         Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
         switch (accident->get_type()) {
-            case Accident_type::Fire:
             case Accident_type::Oxyden_leakege:
             case Accident_type::Brake_water_system:
                 taskType = TASK_EMERGENCY;  // аварийные работы
