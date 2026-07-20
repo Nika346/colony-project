@@ -94,6 +94,10 @@ public:
     void setProduction(ResourceType type, double amount);
     double getConsumptionFor(ResourceType type) const;
     double getProductionFor(ResourceType type) const;
+
+    virtual bool startRepair(Robot* repairRobot);  // Начать ремонт
+    virtual bool performRepairStep(Robot* repairRobot); // Один шаг ремонта
+    bool isUnderRepair() const { return state == ModuleState::UNDER_REPAIR; }
 };
 
 
