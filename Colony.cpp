@@ -119,6 +119,7 @@ Colony::Colony() : rng(42), currentHour(0) {
              << targetModule->getName() << "!" << endl;
     }
     cout << "\nЗаселение завершено! Начинаем симуляцию..." << endl;
+    reset_statistics();
 }
 void Colony::createModules(){
     int habitatCount, greenhouseCount, solarCount, nuclearCount, mineCount, waterRecyclerCount, storageCount, medicalCount, repairBayCount;
@@ -328,6 +329,9 @@ void Colony::tick() {
         // Передаём результаты (чего хватило, а чего нет) в группу.
         // Если чего-то не хватило, здоровье снизится.
         int dead = group->update_health(avail);
+        if (avail.oxygen_ok) stats.oxygen_consumed += need.oxygen;
+        if (avail.water_ok) stats.water_consumed += need.water;
+        if (avail.food_ok) stats.food_consumed += need.food;
         // Если кто-то умер — пишем в консоль
         if (dead > 0) {
             cout << "Час " << currentHour << ": Группа " << group->get_group_id()
@@ -599,6 +603,8 @@ void Colony::run(){
             tick();
         }
     }
+    print_statistics();
+    save_statistics("statistics.txt");
 }
 
 void Colony::generateAccident() {
