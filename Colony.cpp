@@ -358,18 +358,17 @@ void Colony::tick() {
         // Проверяем все группы колонистов
         for (auto& group : colonistGroups) {
             if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
-            if (group->get_state() == STATE_WORKING && group->get_fatigue() > 70) continue;
             if (group->get_transportRobot() != nullptr) continue;  // Уже перемещаются
             
             ModuleType neededModuleType;
             bool needsTransfer = false;
             // Сопоставляем специализацию с типом модуля
-            // 2. ПРИОРИТЕТ 2: УСТАВШИЕ -> В ЖИЛОЙ МОДУЛЬ
+            // 1. ПРИОРИТЕТ 1: УСТАВШИЕ -> В ЖИЛОЙ МОДУЛЬ
             if (group->get_fatigue() > 70 && group->get_state() == STATE_WORKING) {
                 neededModuleType = ModuleType::HABITAT;
                 needsTransfer = true;
                 }
-            // 3. ОБЫЧНАЯ ЛОГИКА: ОВДЫХНУВШИЕ -> НА РАБОТУ (код напарника)
+            // 2. ОБЫЧНАЯ ЛОГИКА: ОВДЫХНУВШИЕ -> НА РАБОТУ 
              else if(group->get_state() == STATE_WAITING &&  group->get_fatigue() < 30) {
                 switch (group->get_specialization()) {
                     case SPEC_MINER:
@@ -438,23 +437,26 @@ void Colony::tick() {
                 Task moveTask(TASK_CARGO, targetMod, targetMod->getImportanceLevel(), 1.0, 10);
                 taskQueue.addTask(moveTask);
 
-                jobOpenings[neededModuleType] -= 1;
+                // Защита от отрицательных значений
+                if (jobOpenings[neededModuleType] > 0) {
+                    jobOpenings[neededModuleType] -= 1;
+                }
                 modulesByType[neededModuleType].erase(modulesByType[neededModuleType].begin());
             }
         }
     }
     // Роботы берут задачи из очереди
     for (const auto& robot : robots) {
-        // Если робот уже движется — пропускаем (он сам идёт)
-        if (robot->get_state() == ROBOT_STATE_MOVING) continue;
         // Если робот не свободен — пропускаем
         if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) continue;
         if (robot->needs_maintenance()) continue;
         if (!canRobotsMove) continue;
         if (!taskQueue.isEmpty()) {
-            Task currentTask = taskQueue.getHighestPriority();
+            Task currentTask = taskQueue.peek();
+            if (!robot->can_perform_task(currentTask.getType())) continue;  // Этот робот не может выполнять такую задачу — пропускаем
+            currentTask = taskQueue.getHighestPriority();// Теперь безопасно забираем задачу из очереди
             ColonyModule* targetMod = currentTask.getTargetModule();
-            if (targetMod != nullptr && robot->assign_task(currentTask.getType(), 4, weather)) {
+            if (targetMod != nullptr && robot->assign_task(currentTask.getType(), currentTask.getComplexity(), weather)) {
                 // Находим группу, которую нужно везти к этому модулю
                 ColonistGroup* groupToTransport = nullptr;
                 if (robot->get_type() == ROBOT_CARGO && currentTask.getType() == TASK_CARGO) {
@@ -497,6 +499,10 @@ void Colony::tick() {
                     }
                 }
             }
+            else if ((currentTask.getType() == TASK_REPAIR || currentTask.getType() == TASK_EMERGENCY) && robot->get_type() == ROBOT_REPAIR) {
+                cout << "Ремонтный робот " << robot->get_id() << " направлен чинить модуль " << targetMod->getName() << endl;
+                targetMod->setState(ModuleState::UNDER_REPAIR);
+            }
             // Робот назначил задачу. Теперь ищем путь!
             vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
             if (!path.empty()) {
@@ -512,34 +518,45 @@ void Colony::tick() {
             }
             else {
                 cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
+                robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // возвращаем в ожидание
             }   
         }
     }
 }
 
-    // Двигаем всех роботов, которые находятся в пути
+    // 8 ДВИЖЕНИЕ РОБОТОВ
     for (auto& robot : robots) {
         if (robot->get_state() == ROBOT_STATE_MOVING) {
             // 1. Проверяем, не разрушен ли текущий путь
             ColonyModule* currentTarget = robot->getTargetModule();
-            if (currentTarget) {
-                vector<int> newPath = findShortestPath(robot->get_module()->getId(), currentTarget->getId(), *robot, weather);
-                if (!newPath.empty()) {
-                    robot->setRoute(newPath, currentTarget); // Обновляем маршрут
-                }
-                else {
-                    cout << "Робот " << robot->get_id() << " потерял путь к цели!" << endl;
-                    robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // Отменяем задачу
-                    if (robot->getPassengers()) {
-                    robot->getPassengers()->set_transportRobot(nullptr);
-                    robot->getPassengers()->set_state(STATE_WAITING);
-                    }
-                }
+            /// Проверяем прибытие
+        if (robot->hasArrived()) {
+            robot->set_state(ROBOT_STATE_WORKING);
+            if (robot->get_type() == ROBOT_REPAIR) {
+                currentTarget->startRepair(robot.get());
+            } else if (robot->get_type() == ROBOT_CARGO) {
+                robot->dropOffPassengers();
+                robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);
             }
-            // 2. Делаем один шаг по маршруту
-            robot->moveOneStep(modules);
+            continue;
+        }
+        // Обычное движение
+        robot->moveOneStep(modules);
         }
     }
+    // ==================== 9. ПРОДОЛЖЕНИЕ РЕМОНТА ====================
+    for (auto& robot : robots) {
+        if (robot->get_state() == ROBOT_STATE_WORKING && robot->get_type() == ROBOT_REPAIR) {
+            ColonyModule* target = robot->getTargetModule();
+            if (target && target->isUnderRepair()) {
+                bool finished = target->performRepairStep(robot.get());
+                if (finished) {
+                    robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);
+                }
+            }
+        }
+    }
+    
     // Обновляем состояние каждого робота (тратит энергию, стареет)
     for (const auto& robot : robots) {
         robot->update();
