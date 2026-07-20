@@ -297,6 +297,27 @@ void Colony::tick() {
             }
         }
     }
+
+    // востановление отключенных модулей
+    for (auto& mod : modules) {
+        if (mod->getState() == ModuleState::OFFLINE) {
+            bool has_resources = true;
+            for (auto const& [ResType, amount] : mod->getConsumption()) {
+                if (amount > 0) {
+                    Resource& res = resources.get_resource(ResType);
+                    if (res.getCurrentAmount() < (amount * 4)) {
+                        has_resources = false;
+                        break;
+                    }
+                }
+            }
+            if (has_resources) {
+                mod->setState(ModuleState::WORKING);
+                cout << "Час " << currentHour << ": Модуль " << mod->getName() << " включен (ресурсы восстановлены)." << endl;
+            }
+        }
+    }
+
     // 3. генерация аварии(каждый час, шанс 3%)
     if (rand() % 100 < 3) {
         generateAccident();
