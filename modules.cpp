@@ -49,7 +49,26 @@ double ColonyModule::getProductionFor(ResourceType type) const {
     auto it = productionRate.find(type);
     return (it != productionRate.end()) ? it->second : 0.0;
 }
+bool ColonyModule::startRepair(Robot* repairRobot) {
+    if (state == ModuleState::DESTROYED || state == ModuleState::WORKING) {
+        return false;
+    }
+    state = ModuleState::UNDER_REPAIR;
+    cout << "Модуль " << name << " начал ремонт (робот " << repairRobot->get_id() << ")" << endl;
+    return true;
+}
 
+bool ColonyModule::performRepairStep(Robot* repairRobot) {
+    if (state != ModuleState::UNDER_REPAIR) return false;
+    repair(8);  // чиним по 8 единиц здоровья за шаг
+    // Если полностью отремонтирован
+    if (currentHealth >= maxHealth) {
+        state = ModuleState::WORKING;
+        cout << "Модуль " << name << " полностью отремонтирован!" << endl;
+        return true; // ремонт завершён
+    }
+    return false;
+}
 
 // HabitatModule
 HabitatModule::HabitatModule(int id, string name, int capacity)
