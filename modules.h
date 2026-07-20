@@ -202,7 +202,7 @@ public:
     RepairBay(int id, string name, int capacity = 3);
     bool acceptRobotForRepair(Robot* robot);  // Принять робота в ремонт
     int repairAllRobots();         // Отремонтировать робота (возвращает количество восстановленного здоровья)
-    bool hasCapacity() const { return robotsInRepair.size() < repairCapacity; } // Есть ли свободное место?
+     bool hasCapacity() const { return robotsInRepair.size() < static_cast<size_t>(repairCapacity); } // Есть ли свободное место?
     int getRobotsInRepair() const { return robotsInRepair.size(); }
     int getRepairCapacity() const { return repairCapacity; }
     const vector<Robot*>& getRobotsInRepairList() const { return robotsInRepair; } // Получить список роботов в ремонте
