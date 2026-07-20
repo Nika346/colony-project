@@ -528,15 +528,19 @@ void Colony::tick() {
     }
 }
 
-    // 8 ДВИЖЕНИЕ РОБОТОВ
+// 8 ДВИЖЕНИЕ РОБОТОВ
     for (auto& robot : robots) {
-        if (robot->get_state() == ROBOT_STATE_MOVING) {
-            // 1. Проверяем, не разрушен ли текущий путь
-            ColonyModule* currentTarget = robot->getTargetModule();
-            /// Проверяем прибытие
+        if (robot->get_state() != ROBOT_STATE_MOVING) continue;
+        ColonyModule* currentTarget = robot->getTargetModule();
+        if (!currentTarget) {
+            robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);
+            continue;
+        }
+        // Проверяем, прибыл ли робот
         if (robot->hasArrived()) {
             robot->set_state(ROBOT_STATE_WORKING);
             if (robot->get_type() == ROBOT_REPAIR) {
+                // Начинаем/продолжаем ремонт
                 currentTarget->startRepair(robot.get());
             } else if (robot->get_type() == ROBOT_CARGO) {
                 robot->dropOffPassengers();
@@ -544,9 +548,8 @@ void Colony::tick() {
             }
             continue;
         }
-        // Обычное движение
+        // Если ещё не прибыл — двигаемся
         robot->moveOneStep(modules);
-        }
     }
     // ==================== 9. ПРОДОЛЖЕНИЕ РЕМОНТА ====================
     for (auto& robot : robots) {
@@ -555,6 +558,7 @@ void Colony::tick() {
             if (target && target->isUnderRepair()) {
                 bool finished = target->performRepairStep(robot.get());
                 if (finished) {
+                    cout << "Робот " << robot->get_id() << " завершил ремонт модуля " << target->getName() << endl;
                     robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);
                 }
             }
