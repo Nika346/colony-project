@@ -11,12 +11,12 @@ using namespace std;
  */
 Robot::Robot(int id, Robot_type type, ColonyModule* current_module,
              double speed, double max_energy)
-    : id(id),
+    : currentPath(),
+      pathIndex(0),
+      id(id),
       type(type),
       current_module(current_module),
       passengers(nullptr),
-      currentPath(),
-      pathIndex(0),
       energy_charge(max_energy * 0.9),  // Начинает с 90% заряда
       max_energy(max_energy),
       speed(speed),
@@ -283,7 +283,7 @@ void Robot::moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules) {
     }
 }
 bool Robot::hasArrived() const {
-    return pathIndex >= currentPath.size();
+    return static_cast<size_t>(pathIndex) >= currentPath.size();
 }
 
 
