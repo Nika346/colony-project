@@ -4,6 +4,8 @@
 #include "colonist.h"
 #include <algorithm>  // для std::max, std::min
 using namespace std;
+
+class Colony;
 /*
  * Конструктор группы колонистов.
  * Инициализирует все поля начальными значениями.
@@ -94,7 +96,7 @@ bool ColonistGroup::update_fatigue(bool is_working) {
         if (fatigue >= 100) {
             opportunity_to_work = false;
             state = STATE_RESTING;  // Принудительный отдых
-            cout << "Группа " << group_id << " достигла предела усталости! Нужен отдых." << endl;
+            cout  << "Группа " << group_id << " достигла предела усталости! Нужен отдых." << endl;
             return false;
         }
     } else {
@@ -183,4 +185,3 @@ void ColonistGroup::move_to_module(ColonyModule* mod){
         current_module = mod->getType();
     }
 }
-
