@@ -252,15 +252,16 @@ void Colony::tick() {
         if (!mod->isOperational()) continue;
         // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
         bool hasWorkersHere = false;
-        for (const auto& group : colonistGroups) {
+        for (auto& group : colonistGroups) {
             // Группа жива, находится в этом модуле и может работать
             if (group->get_state() == STATE_WORKING &&
                 group->get_count() > 0 &&
-                group->get_opportunity_to_work() ) {
+                group->get_opportunity_to_work() &&
+                group->get_end_module() == mod.get()) {
                 // Сравниваем типы модулей (группа находится в жилом, а модуль - рабочий)
                 hasWorkersHere = true;
                 group->update_fatigue(true);
-                }
+            }
         }
         // Если в модуле нет работников, он не производит ресурсы
         if (!hasWorkersHere) continue;
@@ -360,6 +361,49 @@ void Colony::tick() {
         if (dead > 0) {
             cout << "Час " << currentHour << ": Группа " << group->get_group_id()
                  << " потеряла " << dead << " колонистов!" << endl;
+        }
+    }
+    // Автоматический перевод групп в рабочий режим
+    for (auto& group : colonistGroups) {
+        if (group->get_state() != STATE_WAITING) continue;
+        if (!group->get_opportunity_to_work()) continue;
+        if (group->get_count() <= 0) continue;
+
+        ColonyModule* mod = group->get_end_module();
+        if (!mod) continue;
+        ModuleType modType = mod->getType();
+        Task_type task = TASK_MAINTENANCE;
+        bool canWork = false;
+
+        switch (group->get_specialization()) {
+            case SPEC_MINER:
+                if (modType == ModuleType::MINE) { task = TASK_MINING; canWork = true; }
+                break;
+            case SPEC_BIOLOGIST:
+                if (modType == ModuleType::GREENHOUSE) { task = TASK_GREENHOUSE; canWork = true; }
+                break;
+            case SPEC_ENGINEER:
+            case SPEC_TECHNICIAN:
+                if (modType == ModuleType::SOLAR_POWER || modType == ModuleType::NUCLEAR_POWER ||
+                    modType == ModuleType::REPAIR_BAY || modType == ModuleType::WATER_RECYCLER) {
+                    task = (modType == ModuleType::SOLAR_POWER || modType == ModuleType::NUCLEAR_POWER) ? TASK_ENERGY : TASK_REPAIR;
+                    canWork = true;
+                }
+                break;
+            case SPEC_DOCTOR:
+                if (modType == ModuleType::MEDICAL) { task = TASK_MEDICAL; canWork = true; }
+                break;
+            case SPEC_REGULAR:
+                if (modType == ModuleType::GREENHOUSE) { task = TASK_GREENHOUSE; canWork = true; }
+                else if (modType == ModuleType::MINE) { task = TASK_MINING; canWork = true; }
+                break;
+            default: break;
+        }
+
+        if (canWork) {
+            group->set_cur_task(task);
+            group->set_state(STATE_WORKING);
+            cout << "Группа " << group->get_group_id() << " автоматически начала работу в " << mod->getName() << endl;
         }
     }
     // 7. ЗАДАЧИ И РОБОТЫ
@@ -627,7 +671,6 @@ void Colony::run(){
         weather.rand_weather();
         currentHour = 0;
         cout << "--- День " << (i + 1) << " ---" << endl;
-        //int weat = weather.get_type();
         cout << "Погода " ;
         weather.print();
         cout << endl;
@@ -676,27 +719,42 @@ void Colony::generateAccident() {
         }
 
         // Создаём задачу на ремонт
-        Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
+        Task_type taskType = TASK_REPAIR;
         switch (accident->get_type()) {
             case Accident_type::Oxyden_leakege:
             case Accident_type::Brake_water_system:
-                taskType = TASK_EMERGENCY;  // аварийные работы
+                taskType = TASK_EMERGENCY;
                 break;
             case Accident_type::Illness:
-                taskType = TASK_MEDICAL;  // медицинская помощь
+                taskType = TASK_MEDICAL;
                 break;
-            default:
-                taskType = TASK_REPAIR;  // обычный ремонт
-                break;
+            case Accident_type::Damage_transition: {
+                TransportRoute* targetRoute = nullptr;
+                for (auto& route : routes) {
+                    if (route->getState() == RouteState::DAMAGED) {
+                        targetRoute = route.get();
+                        break;
+                    }
+                }
+                if (targetRoute) {
+                    int importance = targetRoute->getMaxHealth() - targetRoute->getCurrentHealth();
+                    double damageLevel = accident->get_force() / 10.0;
+                    Task repairRouteTask(TASK_REPAIR, targetRoute, importance, damageLevel, accident->get_force());
+                    taskQueue.addTask(repairRouteTask);
+                    stats.total_repairs++;
+                    cout << "Создана задача на ремонт перехода " << targetRoute->getId() << endl;
+                }
+            }
+            break;
+            default: {
+                int moduleImportance = targetModule->getImportanceLevel();
+                double damageLevel = accident->get_force() / 10.0;
+                Task task(taskType, targetModule, moduleImportance, damageLevel, accident->get_force());
+                taskQueue.addTask(task);
+                stats.total_repairs++;
+            }
+            break;
         }
-        // Рассчитываем приоритет
-        int moduleImportance = targetModule->getImportanceLevel();
-        double damageLevel = accident->get_force() / 10.0;  // сила аварии (0.1 - 0.5)
-        Task task(taskType, targetModule, moduleImportance, damageLevel, accident->get_force());
-
-        // Добавляем в приоритетную очередь
-        taskQueue.addTask(task);
-        stats.total_repairs++;
     }
 }
 
@@ -866,7 +924,7 @@ void Colony::export_dot(const string& file_name) const{
     for (const auto& route : routes) {
         out << "    " << route->getStartModule()->getId() << " -> "
             << route->getEndModule()->getId() << " [label=\"длина=" << route->getLength()
-            << "\\nсост=" << static_cast<int>(route->getState()) << "\"];" << endl;
+            << "\\n" << route_state(route->getState()) << "\"];" << endl;
     }
     out << "}" << endl;
     out.close();
