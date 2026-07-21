@@ -48,6 +48,9 @@ public:
     int getCurrentHealth() const { return currentHealth; }
     bool isUsableByRobots() const { return usableByRobots; }
     bool isUsableByColonists() const { return usableByColonists; }
+    bool start_repair(Robot* repairRobot);
+    bool repair(Robot* repairRobot);
+    bool is_under_repair() const;
 
     void setState(RouteState newState) { state = newState; }
     void setCapacity(int cap) { capacity = cap; }
@@ -55,3 +58,4 @@ public:
     void setUsableByColonists(bool usable) { usableByColonists = usable; }
 };
 
+string route_state(RouteState state);
