@@ -85,9 +85,9 @@ bool ColonistGroup::update_fatigue(bool is_working) {
     }
     if (is_working) {
         // При работе усталость растёт (скорость зависит от состояния здоровья)
-        double fatigue_increase = 1.0;
+        double fatigue_increase = 3.0;
         if (health < 50) {
-            fatigue_increase = 2.0;  // Больной быстрее устаёт
+            fatigue_increase = 5.0;  // Больной быстрее устаёт
         }
         fatigue = min(100.0, fatigue + fatigue_increase);
         // Если усталость достигла 100%, колонисты не могут работать
@@ -99,7 +99,7 @@ bool ColonistGroup::update_fatigue(bool is_working) {
         }
     } else {
         // При отдыхе усталость снижается
-        fatigue = max(0.0, fatigue - 2.0);
+        fatigue = max(0.0, fatigue - 6.0);
         if (fatigue < 30) {
             opportunity_to_work = true;  // Отдохнули, могут работать
         }
