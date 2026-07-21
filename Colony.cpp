@@ -13,7 +13,9 @@
 using namespace std;
 
 // ==================== Colony ====================
-Colony::Colony() : rng(42), currentHour(0) {
+Colony::Colony() : currentHour(0) {
+    random_device rd;
+    rng.seed(rd());
     createModules();
     int n;
     cout << "Введите количество транспортных путей: " << endl;
@@ -57,12 +59,10 @@ Colony::Colony() : rng(42), currentHour(0) {
         }
         // Создаем робота и добавляем в список
         int robotId = i + 1; // ID робота начинается с 1
-        double robotSpeed;
-        cout << "Введите скорость робота (например, 2.0, 3.0 или 5.0): ";
-        cin >> robotSpeed;
+        double robotSpeed = speedDist(rng);
         robots.push_back(make_shared<Robot>(robotId, robotType, targetModule, robotSpeed, 100.0));
         cout << "Робот " << robotId << " (" << robot_type_to_str(robotType) << ") создан в модуле "
-             << targetModule->getName() << "!" << endl;
+             << targetModule->getName() << "! (скорость " << robotSpeed <<")" << endl;
     }
     //СОЗДАНИЕ ГРУПП КОЛОНИСТОВ
     cout << "\n--- СОЗДАНИЕ ГРУПП КОЛОНИСТОВ ---" << endl;
@@ -109,11 +109,12 @@ Colony::Colony() : rng(42), currentHour(0) {
             targetModule = modules[0].get();
         }
         // Создаем группу колонистов и добавляем в список
+        double ranHel = dist75_120(rng);
         string fullGroupName = groupName + " " + to_string(i + 1);
         colonistGroups.push_back(make_shared<ColonistGroup>(
             fullGroupName, spec, personCount,
             targetModule, TASK_MAINTENANCE,
-            100.0, 0.0, Resources_consumption()
+            ranHel, 0.0, Resources_consumption()
         ));
         cout << "Группа " << fullGroupName << " (" << personCount << " чел.) создана в модуле "
              << targetModule->getName() << "!" << endl;
