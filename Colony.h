@@ -57,6 +57,8 @@ private:
     vector<shared_ptr<ColonyModule>> modules;
     vector<shared_ptr<TransportRoute>> routes;
     mt19937 rng;  // генератор случайных чисел
+    uniform_real_distribution<double> dist75_120{75.0, 120.0};
+    uniform_real_distribution<double> speedDist{5.0, 15.0};
     ColonyResourceManager resources; // Запасы ресурсов
     Weather weather;                 // Погода
     int currentHour;                 // Счётчик часов для вывода в консоль
