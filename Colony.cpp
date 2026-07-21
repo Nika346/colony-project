@@ -9,6 +9,8 @@
 #include <queue>
 #include <limits>
 #include <map>
+#include <random>
+#include <chrono>
 #include "Colony.h"
 using namespace std;
 
@@ -252,9 +254,9 @@ void Colony::tick() {
         bool hasWorkersHere = false;
         for (const auto& group : colonistGroups) {
             // Группа жива, находится в этом модуле и может работать
-            if (group->get_state() != STATE_DEAD &&
+            if (group->get_state() == STATE_WORKING &&
                 group->get_count() > 0 &&
-                group->get_opportunity_to_work()) {
+                group->get_opportunity_to_work() ) {
                 // Сравниваем типы модулей (группа находится в жилом, а модуль - рабочий)
                 hasWorkersHere = true;
                 group->update_fatigue(true);
@@ -275,7 +277,7 @@ void Colony::tick() {
                 }
             }
         }
-    }  
+    }
     // 2. ПОТРЕБЛЕНИЕ РЕСУРСОВ
     for (const auto& mod : modules) {
         if (!mod->isOperational()) continue;
@@ -328,7 +330,7 @@ void Colony::tick() {
 
     // лечение в медицинских модулях
     process_medical_modules();
-    
+
     // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
     vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     for (ResourceType type : types) {
@@ -385,7 +387,7 @@ void Colony::tick() {
         for (auto& group : colonistGroups) {
             if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
             if (group->get_transportRobot() != nullptr) continue;  // Уже перемещаются
-            
+
             ModuleType neededModuleType;
             bool needsTransfer = false;
             // Сопоставляем специализацию с типом модуля
@@ -394,7 +396,7 @@ void Colony::tick() {
                 neededModuleType = ModuleType::HABITAT;
                 needsTransfer = true;
                 }
-            // 2. ОБЫЧНАЯ ЛОГИКА: ОВДЫХНУВШИЕ -> НА РАБОТУ 
+            // 2. ОБЫЧНАЯ ЛОГИКА: ОВДЫХНУВШИЕ -> НА РАБОТУ
              else if(group->get_state() == STATE_WAITING &&  group->get_fatigue() < 30) {
                 switch (group->get_specialization()) {
                     case SPEC_MINER:
@@ -455,10 +457,10 @@ void Colony::tick() {
             }
             if (needsTransfer && !modulesByType[neededModuleType].empty()) {
                 if (group->get_module() == neededModuleType) continue;// Группа уже здесь, пропускаем
-                
+
                 // Берём первый подходящий модуль этого типа
                 ColonyModule* targetMod = modulesByType[neededModuleType][0];
-                
+
                 // Создаём задачу на перевозку этой конкретной группы
                 Task moveTask(TASK_CARGO, targetMod, targetMod->getImportanceLevel(), 1.0, 10);
                 taskQueue.addTask(moveTask);
@@ -500,7 +502,7 @@ void Colony::tick() {
                             case SPEC_ENGINEER:
                             case SPEC_TECHNICIAN:
                                 matches = (targetMod->getType() == ModuleType::REPAIR_BAY ||
-                                          targetMod->getType() == ModuleType::SOLAR_POWER || 
+                                          targetMod->getType() == ModuleType::SOLAR_POWER ||
                                           targetMod->getType() == ModuleType::NUCLEAR_POWER ||
                                           targetMod->getType() == ModuleType::WATER_RECYCLER);
                                 break;
@@ -545,7 +547,7 @@ void Colony::tick() {
             else {
                 cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
                 robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // возвращаем в ожидание
-            }   
+            }
         }
     }
 }
@@ -586,7 +588,7 @@ void Colony::tick() {
             }
         }
     }
-    
+
     // Обновляем состояние каждого робота (тратит энергию, стареет)
     for (const auto& robot : robots) {
         robot->update();
@@ -625,6 +627,10 @@ void Colony::run(){
         weather.rand_weather();
         currentHour = 0;
         cout << "--- День " << (i + 1) << " ---" << endl;
+        //int weat = weather.get_type();
+        cout << "Погода " ;
+        weather.print();
+        cout << endl;
         for (int hour = 0; hour < 24; hour++) {
             tick();
         }
@@ -668,7 +674,7 @@ void Colony::generateAccident() {
                 cout << "Нет медицинского модуля для лечения!" << endl;
             }
         }
-        
+
         // Создаём задачу на ремонт
         Task_type taskType = TASK_REPAIR;  // по умолчанию — ремонт
         switch (accident->get_type()) {
@@ -687,7 +693,7 @@ void Colony::generateAccident() {
         int moduleImportance = targetModule->getImportanceLevel();
         double damageLevel = accident->get_force() / 10.0;  // сила аварии (0.1 - 0.5)
         Task task(taskType, targetModule, moduleImportance, damageLevel, accident->get_force());
-        
+
         // Добавляем в приоритетную очередь
         taskQueue.addTask(task);
         stats.total_repairs++;
@@ -1006,16 +1012,16 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
     map<int, int> parent; // Откуда пришли в каждый модуль (для восстановления пути)
     // Обработанные модули
     set<int> visited;    // Обработанные модули, set - тоже самое, что и вектор, но в него нельзя добавить два одинаковых значений
-    
+
     // Инициализация: все расстояния = бесконечность
     for (const auto& mod : modules) {
         dist[mod->getId()] = numeric_limits<double>::infinity();
     }
-    
+
     // Расстояние до старта = 0
     dist[startModuleId] = 0.0;
     parent[startModuleId] = -1;
-    
+
     // Приоритетная очередь (min-heap по времени)
     priority_queue<PathNode, vector<PathNode>, greater<PathNode>> pq; //greater<PathNode> вызывает operator>, те сортирует по возрастанию времени прохождения
     pq.push({startModuleId, 0.0}); // добавляем стартовый узел графа
@@ -1054,10 +1060,10 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
             if (travelTime == numeric_limits<double>::infinity()) {
                 continue;
             }
-            
+
             // Новое время = текущее + время перехода
             double newTime = currentTime + travelTime;
-            
+
             // Если нашли более быстрый путь — обновляем
             if (newTime < dist[neighborId]) {
                 dist[neighborId] = newTime;
@@ -1068,10 +1074,10 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
     }
     // Проверяем, достижима ли цель
     if (dist[endModuleId] == numeric_limits<double>::infinity()) {
-        cout << "Путь от модуля " << startModuleId 
+        cout << "Путь от модуля " << startModuleId
              << " к модулю " << endModuleId << " не найден!\n";
         return {};
-    } 
+    }
     // Восстанавливаем путь от конца к началу
     vector<int> path;
     for (int at = endModuleId; at != -1; at = parent[at]) {
