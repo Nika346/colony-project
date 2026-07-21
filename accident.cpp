@@ -157,14 +157,16 @@ Accident* Accident_generator::generate_accident(const Weather& weather, int prob
             urgency = 8;
             break;
         default:
-            int r = rand() % 10;
+            int r = rand() % 8;
             switch (r) {
-        case 0: type = Accident_type::Oxyden_leakege; desc = "Утечка кислорода"; urgency = 10; break;
+                case 0: type = Accident_type::Oxyden_leakege; desc = "Утечка кислорода"; urgency = 10; break;
                 case 1: type = Accident_type::Brake_water_system; desc = "Отказ системы воды"; urgency = 9; break;
-                case 3: type = Accident_type::Mine_collapse; desc = "Обрушение в шахте"; urgency = 8; break;
-                case 4: type = Accident_type::Illness; desc = "Вспышка болезни"; urgency = 9; break;
-                case 5: type = Accident_type::Damage_robot; desc = "Повреждение робота"; urgency = 6; break;
-                case 7: type = Accident_type::Break_solar_panel; desc = "Поломка панелей"; urgency = 6; break;
+                case 2: type = Accident_type::Mine_collapse; desc = "Обрушение в шахте"; urgency = 8; break;
+                case 3: type = Accident_type::Illness; desc = "Вспышка болезни"; urgency = 9; break;
+                case 4: type = Accident_type::Damage_robot; desc = "Повреждение робота"; urgency = 6; break;
+                case 5: type = Accident_type::Break_solar_panel; desc = "Поломка панелей"; urgency = 6; break;
+                case 6: type = Accident_type::Damage_transition; desc = "Повреждение перехода"; urgency = 7; break;
+                case 7: type = Accident_type::Yield_growth; desc = "Рост урожайности"; urgency = 2; break;
             }
             break;
     }
