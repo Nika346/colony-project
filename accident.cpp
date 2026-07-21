@@ -153,7 +153,7 @@ Accident* Accident_generator::generate_accident(const Weather& weather, int prob
             break;
         case Weather_type::Radioactive_outbreak:
             type = Accident_type::Damage_robot;
-            desc = "Радиационная вспышка вызвала сбой электроники.";
+            desc = "Радиационная вспышка вызвала сбой электроники, повреждены роботы.";
             urgency = 8;
             break;
         default:
