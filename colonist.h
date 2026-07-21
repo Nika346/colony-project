@@ -97,6 +97,7 @@ public:
     ColonyModule* get_start_module() const { return start_module; }
     void move_to_module(ColonyModule* mod);
     ColonyModule* get_end_module() const { return end_module; }
+    void set_end_module(ColonyModule* mod) { end_module = mod; }
 
      //Метод для обновления здоровья колонистов
      //Здоровье снижается при недостатке ресурсов или высоком уровне усталости
