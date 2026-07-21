@@ -83,3 +83,38 @@ bool TransportRoute::isPassable(bool forRobots) const {
     }
 }
 
+
+bool TransportRoute::start_repair(Robot* repairRobot){
+    if (state == RouteState::DESTROYED || state == RouteState::OPERATIONAL) {
+        return false;
+    }
+    state = RouteState::UNDER_REPAIR;
+    cout << "Переход " << id << " начал ремонт (робот " << repairRobot->get_id() << ")" << endl;
+    return true;
+}
+
+bool TransportRoute::repair(Robot* repairRobot){
+    if (state != RouteState::UNDER_REPAIR) return false;
+    currentHealth = min(maxHealth, currentHealth + 10);
+    if (currentHealth >= maxHealth) {
+        state = RouteState::OPERATIONAL;
+        cout << "Переход " << id << " полностью отремонтирован!" << endl;
+        return true;
+    }
+    return false;
+}
+bool TransportRoute::is_under_repair() const{
+    return state == RouteState::UNDER_REPAIR;
+}
+
+string route_state(RouteState state){
+    switch (state){
+        case RouteState::OPERATIONAL: return "исправен";
+        case RouteState::DAMAGED: return "повреждён";
+        case RouteState::OVERLOADED: return "перегружен";
+        case RouteState::UNDER_REPAIR: return "ремонтируется";
+        case RouteState::DESTROYED: return "разрушен";
+        default: return "неизвестно";
+    }
+}
+
