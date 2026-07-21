@@ -294,13 +294,56 @@ void Robot::setPassengers(ColonistGroup* group) {
     }
 }
 
+
 void Robot::dropOffPassengers() {
     if (passengers) {
-        cout << "Робот " << id << " высадил группу "<< passengers->get_group_id() << " в модуле " << current_module->getName() << endl;
+        cout << "Робот " << id << " высадил группу " << passengers->get_group_id() << " в модуле " << current_module->getName() << endl;
         passengers->set_module(current_module->getType());
-        passengers->set_state(STATE_WAITING);
         passengers->set_opportunity_to_work(true);
         passengers->set_transportRobot(nullptr);
+
+        ModuleType modType = current_module->getType();
+        bool isHabitat = (modType == ModuleType::HABITAT);
+
+        if (isHabitat) {
+            passengers->set_state(STATE_RESTING);
+            passengers->set_cur_task(TASK_MAINTENANCE);
+        } else {
+            Task_type task = TASK_MAINTENANCE;
+            Colonist_spec spec = passengers->get_specialization();
+            switch (modType) {
+                case ModuleType::MINE:
+                    task = TASK_MINING;
+                    break;
+                case ModuleType::GREENHOUSE:
+                    task = TASK_GREENHOUSE;
+                    break;
+                case ModuleType::SOLAR_POWER:
+                case ModuleType::NUCLEAR_POWER:
+                    task = TASK_ENERGY;
+                    break;
+                case ModuleType::MEDICAL:
+                    task = TASK_MEDICAL;
+                    break;
+                case ModuleType::REPAIR_BAY:
+                case ModuleType::WATER_RECYCLER:
+                    task = TASK_REPAIR;
+                    break;
+                default:
+                    task = TASK_MAINTENANCE;
+                    break;
+            }
+            if (passengers->can_perform_task(task)) {
+                passengers->set_cur_task(task);
+                passengers->set_state(STATE_WORKING);
+                cout << "Группа " << passengers->get_group_id() << " начала работу в модуле " << current_module->getName() << endl;
+            } else {
+                passengers->set_state(STATE_WAITING);
+                passengers->set_cur_task(TASK_MAINTENANCE);
+            }
+        }
+        passengers->set_end_module(current_module);
         passengers = nullptr;
     }
 }
+
