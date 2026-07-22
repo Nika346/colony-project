@@ -217,7 +217,7 @@ bool Robot::can_perform_task(Task_type task) const {
     // Проверяем соответствие типа робота и задачи
     switch (type) {
         case ROBOT_MINING:
-            return (task == TASK_MINING || task == TASK_CARGO);
+            return (task == TASK_MINING);
         case ROBOT_REPAIR:
             return (task == TASK_REPAIR || task == TASK_EMERGENCY);
         case ROBOT_MEDICAL:
