@@ -250,17 +250,24 @@ void Colony::tick() {
     for (const auto& mod : modules) {
         // Модуль должен работать
         if (!mod->isOperational()) continue;
-        // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
         bool hasWorkersHere = false;
-        for (auto& group : colonistGroups) {
+        // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
+        for (const auto& group : colonistGroups) {
             // Группа жива, находится в этом модуле и может работать
             if (group->get_state() == STATE_WORKING &&
                 group->get_count() > 0 &&
                 group->get_opportunity_to_work() &&
-                group->get_end_module() == mod.get()) {
-                // Сравниваем типы модулей (группа находится в жилом, а модуль - рабочий)
+                group->get_module_cur()==mod.get() &&
+                mod->spec.find(group->get_specialization())!=mod->spec.end()) {
                 hasWorkersHere = true;
                 group->update_fatigue(true);
+            }
+        }
+        for (const auto& rob : robots){
+            if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING && 
+            rob->get_module() == mod.get()) {   // робот находится в этом модуле
+                    hasWorkersHere = true;
+                    break;
             }
         }
         // Если в модуле нет работников, он не производит ресурсы
@@ -282,6 +289,23 @@ void Colony::tick() {
     // 2. ПОТРЕБЛЕНИЕ РЕСУРСОВ
     for (const auto& mod : modules) {
         if (!mod->isOperational()) continue;
+        bool hasWorkersHere = false;
+        // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
+        for (const auto& group : colonistGroups) {
+            if (group->get_state() == STATE_WORKING && group->get_count() > 0 && group->get_opportunity_to_work() && group->get_module_cur()==mod.get() &&
+                mod->spec.find(group->get_specialization())!=mod->spec.end()) {
+                hasWorkersHere = true;
+                break;;
+            }
+        }
+        for (const auto& rob : robots){
+            if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING && 
+            rob->get_module() == mod.get()) {   // робот находится в этом модуле
+                    hasWorkersHere = true;
+                    break;
+            }
+        }
+        if(!hasWorkersHere) continue;
 
         for (auto const& [ResType, amount] : mod->getConsumption()) {
             if (amount > 0) {
@@ -411,10 +435,13 @@ void Colony::tick() {
     bool canRobotsMove = weather.get_speed() > 0.0;
     // Проверка на наличие грузовых роботов в целом
     bool hasCargoRobot = false;
+    int rob_m = 0; //свободных кол-во добывающих роботов
     for (const auto& r : robots) {
         if (r->get_type() == ROBOT_CARGO && r->get_state() != ROBOT_STATE_DESTROYED) {
             hasCargoRobot = true;
-            break;
+        }
+        else if (r->get_type() == ROBOT_MINING && r->get_state() == ROBOT_STATE_WAITING_FOR_TASK) {
+            rob_m++;
         }
     }
         // Анализ всех модулей, если робот есть и он может двигаться
@@ -426,6 +453,11 @@ void Colony::tick() {
             if (mod->getType() == ModuleType::HABITAT) continue;
             jobOpenings[mod->getType()] += 1;
             modulesByType[mod->getType()].push_back(mod.get());
+            if(mod->getType() == ModuleType::MINE && rob_m>0){
+                Task mineTask(TASK_MINING, mod.get(), mod->getImportanceLevel(), 1.0, 10);
+                taskQueue.addTask(mineTask);
+                rob_m--;
+            }
         }
         // Проверяем все группы колонистов
         for (auto& group : colonistGroups) {
@@ -575,6 +607,9 @@ void Colony::tick() {
                 cout << "Ремонтный робот " << robot->get_id() << " направлен чинить модуль " << targetMod->getName() << endl;
                 targetMod->setState(ModuleState::UNDER_REPAIR);
             }
+            else if (currentTask.getType() == TASK_MINING && robot->get_type() == ROBOT_MINING) {
+                cout << "Добывающий робот " << robot->get_id() << " направлен добывать в модуль " << targetMod->getName() << endl;
+            }
             // Робот назначил задачу. Теперь ищем путь!
             vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
             if (!path.empty()) {
@@ -613,6 +648,10 @@ void Colony::tick() {
             } else if (robot->get_type() == ROBOT_CARGO) {
                 robot->dropOffPassengers();
                 robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);
+            }
+            else if(robot->get_type() == ROBOT_MINING){
+                robot->set_state(ROBOT_STATE_WORKING);
+                cout<<"Робот " << robot->get_id() <<" прибыл в "<< currentTarget->getName()<<endl;
             }
             continue;
         }
