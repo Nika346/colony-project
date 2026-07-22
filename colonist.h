@@ -43,6 +43,7 @@ private:
     Task_type current_task;
     // Модуль, в котором сейчас находится группа
     ModuleType current_module;
+    ColonyModule* module_cur;
     // Нормы потребления ресурсов для одного колониста
     Resources_consumption resources_consumption;
     // Может ли группа работать (зависит от здоровья и усталости)
@@ -73,6 +74,7 @@ public:
     int get_count() const { return count; }
     Colonist_spec get_specialization() const { return specialization; }
     ModuleType get_module() const { return current_module; }
+    ColonyModule* get_module_cur() const {return module_cur;}
     Task_type get_cur_task() const { return current_task; }
     double get_health() const { return health; }
     double get_fatigue() const { return fatigue; }
