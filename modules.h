@@ -9,6 +9,8 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <set>
+#include "enum_col_rob.h"
 using namespace std;
 
 class Robot;
@@ -68,6 +70,7 @@ protected:
     map<ResourceType, double> productionRate;
 public:
     vector<shared_ptr<ColonyModule>> ModulesRoutes;
+    set<Colonist_spec> spec;
     ColonyModule(int id, string name, ModuleType type,
                  int maxHealth, int importance);
     virtual ~ColonyModule()=default;
