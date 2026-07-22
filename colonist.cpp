@@ -22,6 +22,7 @@ ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int
       state(STATE_WAITING),  // Изначально ожидают назначения
       current_task(current_task),
       current_module(moduleptr ? moduleptr->getType() : ModuleType::HABITAT),
+      module_cur(moduleptr),
       resources_consumption(consumption),
       opportunity_to_work(true),  // Изначально могут работать
       consumptionRatePerPerson(consumption),
