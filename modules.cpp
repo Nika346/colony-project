@@ -72,11 +72,12 @@ bool ColonyModule::performRepairStep(Robot* repairRobot) {
 
 // HabitatModule
 HabitatModule::HabitatModule(int id, string name, int capacity)
-    : ColonyModule(id, name, ModuleType::HABITAT, 100, 10),
+    : ColonyModule(id, name, ModuleType::HABITAT, 100, 6),
       colonistCapacity(capacity), currentColonists(0) {
     setConsumption(ResourceType::OXYGEN, 5.0);
     setConsumption(ResourceType::WATER, 3.0);
     setConsumption(ResourceType::ENERGY, 10.0);
+    spec = {};
 }
 void HabitatModule::addColonists(int count) {
     currentColonists = min(colonistCapacity, currentColonists + count);
@@ -88,12 +89,13 @@ void HabitatModule::removeColonists(int count) {
 
 // Greenhouse
 Greenhouse::Greenhouse(int id, string name)
-    : ColonyModule(id, name, ModuleType::GREENHOUSE, 80, 7),
+    : ColonyModule(id, name, ModuleType::GREENHOUSE, 80, 9),
       efficiency(1.0f) {
     setConsumption(ResourceType::WATER, 8.0);
     setConsumption(ResourceType::ENERGY, 5.0);
     setProduction(ResourceType::FOOD, 6.0);
-    setProduction(ResourceType::OXYGEN, 2.0);
+    setProduction(ResourceType::OXYGEN, 10.0);
+    spec = {SPEC_BIOLOGIST, SPEC_REGULAR};
 }
 void Greenhouse::setWeatherEffect(float modifier) {
     efficiency = modifier;
@@ -102,9 +104,10 @@ void Greenhouse::setWeatherEffect(float modifier) {
 
 // SolarPowerPlant
 SolarPowerPlant::SolarPowerPlant(int id, string name, float baseProd)
-    : ColonyModule(id, name, ModuleType::SOLAR_POWER, 60, 8),
+    : ColonyModule(id, name, ModuleType::SOLAR_POWER, 60, 7),
       baseProduction(baseProd), weatherEfficiency(1.0f) {
     setProduction(ResourceType::ENERGY, baseProd);
+    spec = {SPEC_ENGINEER};
 }
 void SolarPowerPlant::setWeatherModifier(float modifier) {
     weatherEfficiency = modifier;
@@ -121,6 +124,7 @@ NuclearPowerPlant::NuclearPowerPlant(int id, string name, float baseProd)
       fuelConsumptionRate(5.0) {
     setProduction(ResourceType::ENERGY, baseProd);
     setConsumption(ResourceType::FUEL, fuelConsumptionRate);
+    spec = {SPEC_ENGINEER};
 }
 void NuclearPowerPlant::addFuel(double amount) {
     fuelAmount = min(maxFuel, fuelAmount + amount);
@@ -129,19 +133,22 @@ void NuclearPowerPlant::addFuel(double amount) {
 
 // Mine
 Mine::Mine(int id, string name, int productionRate)
-    : ColonyModule(id, name, ModuleType::MINE, 90, 6),
-      miningSpeed(productionRate) { // я тут исправила oreProductionRate(productionRate) на то что написала как в объявлении
+    : ColonyModule(id, name, ModuleType::MINE, 90, 7),
+      miningSpeed(productionRate) {
     setConsumption(ResourceType::ENERGY, 15.0);
     setProduction(ResourceType::ORE, productionRate);
+    setProduction(ResourceType::FUEL, productionRate);
+    spec = {SPEC_MINER, SPEC_REGULAR};
 }
 
 
 // WaterRecycler
 WaterRecycler::WaterRecycler(int id, string name)
-    : ColonyModule(id, name, ModuleType::WATER_RECYCLER, 70, 9),
+    : ColonyModule(id, name, ModuleType::WATER_RECYCLER, 70, 10),
       recyclingEfficiency(1.0f) {
     setConsumption(ResourceType::ENERGY, 10.0);
     setProduction(ResourceType::WATER, 12.0);
+    spec = {SPEC_ENGINEER};
 }
 
 
@@ -149,6 +156,7 @@ WaterRecycler::WaterRecycler(int id, string name)
 Storage::Storage(int id, string name)
     : ColonyModule(id, name, ModuleType::STORAGE, 100, 5) {
     setConsumption(ResourceType::ENERGY, 2.0);
+    spec = {};
     for (int i = 0; i <= static_cast<int>(ResourceType::ORE); ++i) {
         ResourceType type = static_cast<ResourceType>(i);
         storageCapacity[type] = 1000.0;
@@ -180,6 +188,7 @@ MedicalModule::MedicalModule(int id, string name)
       healingRate(5), patientsCount(0) {
     setConsumption(ResourceType::ENERGY, 8.0);
     setConsumption(ResourceType::MEDICINES, 0.5);
+    spec = {SPEC_DOCTOR};
 }
 
 void MedicalModule::add_patient(shared_ptr<ColonistGroup> group) {
@@ -219,6 +228,7 @@ RepairBay::RepairBay(int id, string name, int capacity)
       robotsInRepair(), repairCapacity(capacity), repairSpeed(30) {
     setConsumption(ResourceType::ENERGY, 12.0);
     setConsumption(ResourceType::SPARE_PARTS, 2.0);
+    spec = {SPEC_ENGINEER};
 }
 bool RepairBay::acceptRobotForRepair(Robot* robot) {
     if (!robot) return false;
