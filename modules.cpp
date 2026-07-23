@@ -1,6 +1,3 @@
-//
-// Created by Вероника on 06.07.2026.
-//
 #include "Modules.h"
 #include "colonist.h"
 #include "robot.h"
@@ -13,7 +10,6 @@ ColonyModule::ColonyModule(int id, string name, ModuleType type,
     : id(id), name(name), type(type), state(ModuleState::WORKING),
       maxHealth(maxHealth), currentHealth(maxHealth),
       importanceLevel(importance), workersCount(0), repairTime(0) {}
-
 
 void ColonyModule::takeDamage(int amount) {
     if (state == ModuleState::DESTROYED) return;
@@ -60,8 +56,7 @@ bool ColonyModule::startRepair(Robot* repairRobot) {
 
 bool ColonyModule::performRepairStep(Robot* repairRobot) {
     if (state != ModuleState::UNDER_REPAIR) return false;
-    repair(8);  // чиним по 8 единиц здоровья за шаг
-    // Если полностью отремонтирован
+    repair(8);
     if (currentHealth >= maxHealth) {
         state = ModuleState::WORKING;
         cout << "Модуль " << name << " полностью отремонтирован!" << endl;
@@ -70,7 +65,6 @@ bool ColonyModule::performRepairStep(Robot* repairRobot) {
     return false;
 }
 
-// HabitatModule
 HabitatModule::HabitatModule(int id, string name, int capacity)
     : ColonyModule(id, name, ModuleType::HABITAT, 100, 6),
       colonistCapacity(capacity), currentColonists(0) {
@@ -86,8 +80,6 @@ void HabitatModule::removeColonists(int count) {
     currentColonists = max(0, currentColonists - count); // тут добавила присваивание
 }
 
-
-// Greenhouse
 Greenhouse::Greenhouse(int id, string name)
     : ColonyModule(id, name, ModuleType::GREENHOUSE, 80, 9),
       efficiency(1.0f) {
@@ -101,8 +93,6 @@ void Greenhouse::setWeatherEffect(float modifier) {
     efficiency = modifier;
 }
 
-
-// SolarPowerPlant
 SolarPowerPlant::SolarPowerPlant(int id, string name, float baseProd)
     : ColonyModule(id, name, ModuleType::SOLAR_POWER, 60, 7),
       baseProduction(baseProd), weatherEfficiency(1.0f) {
@@ -116,8 +106,6 @@ float SolarPowerPlant::getEnergyProduction() const {
     return baseProduction * weatherEfficiency;
 }
 
-
-// NuclearPowerPlant
 NuclearPowerPlant::NuclearPowerPlant(int id, string name, float baseProd)
     : ColonyModule(id, name, ModuleType::NUCLEAR_POWER, 120, 9),
       baseProduction(baseProd), fuelAmount(100.0), maxFuel(100.0),
@@ -130,8 +118,6 @@ void NuclearPowerPlant::addFuel(double amount) {
     fuelAmount = min(maxFuel, fuelAmount + amount);
 }
 
-
-// Mine
 Mine::Mine(int id, string name, int productionRate)
     : ColonyModule(id, name, ModuleType::MINE, 90, 9),
       miningSpeed(productionRate) {
@@ -141,8 +127,6 @@ Mine::Mine(int id, string name, int productionRate)
     spec = {SPEC_MINER, SPEC_REGULAR};
 }
 
-
-// WaterRecycler
 WaterRecycler::WaterRecycler(int id, string name)
     : ColonyModule(id, name, ModuleType::WATER_RECYCLER, 70, 10),
       recyclingEfficiency(1.0f) {
@@ -151,8 +135,6 @@ WaterRecycler::WaterRecycler(int id, string name)
     spec = {SPEC_ENGINEER};
 }
 
-
-//Storage
 Storage::Storage(int id, string name)
     : ColonyModule(id, name, ModuleType::STORAGE, 100, 5) {
     setConsumption(ResourceType::ENERGY, 2.0);
@@ -182,7 +164,6 @@ double Storage::getStoredAmount(ResourceType type) const {
     return (it != currentStorage.end()) ? it->second : 0.0;
 }
 
-//MedicalModule
 MedicalModule::MedicalModule(int id, string name)
     : ColonyModule(id, name, ModuleType::MEDICAL, 80, 10),
       healingRate(5), patientsCount(0) {
@@ -221,8 +202,6 @@ bool MedicalModule::has_patients() const {
     return !patients.empty();
 }
 
-
-// RepairBay
 RepairBay::RepairBay(int id, string name, int capacity)
     : ColonyModule(id, name, ModuleType::REPAIR_BAY, 90, 8),
       robotsInRepair(), repairCapacity(capacity), repairSpeed(30) {
