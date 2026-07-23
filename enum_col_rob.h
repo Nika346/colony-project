@@ -7,53 +7,52 @@
 using namespace std;
 // Специализации колонистов - определяют, какие задачи может выполнять колонист
 enum Colonist_spec {
-    SPEC_ENGINEER,          // Инженер - ремонт и строительство
-    SPEC_BIOLOGIST,         // Биолог - работа в теплице, исследование флоры
-    SPEC_MINER,             // Шахтёр - добыча ресурсов
-    SPEC_DOCTOR,            // Доктор - лечение колонистов
-    SPEC_ENERGY_OPERATOR,   // Оператор энергосистем - управление энергоснабжением
-    SPEC_TECHNICIAN,        // Техник - обслуживание оборудования
-    SPEC_REGULAR            // Обычный житель - может выполнять базовые задачи
+    SPEC_ENGINEER,          
+    SPEC_BIOLOGIST,       
+    SPEC_MINER,             
+    SPEC_DOCTOR,           
+    SPEC_ENERGY_OPERATOR,   
+    SPEC_TECHNICIAN,       
+    SPEC_REGULAR           
 };
 // Состояния колонистов - отражают текущую активность
 enum Colonist_state {
-    STATE_RESTING,          // Отдыхает - восстанавливает силы
-    STATE_WORKING,          // Работает - выполняет задачу
-    STATE_MOVING,           // Перемещается - между модулями
-    STATE_REPAIRING,        // Ремонтирует - оборудование или модули
-    STATE_TREATMENT,        // Лечится - в медицинском модуле
-    STATE_WAITING,          // Ожидает назначения - свободен
-    STATE_IN_DANGER,        // В опасности - требует немедленной помощи
-    STATE_DEAD,             // Погиб - исключён из модели
+    STATE_RESTING,          
+    STATE_WORKING,          
+    STATE_MOVING,          
+    STATE_REPAIRING,      
+    STATE_TREATMENT,       
+    STATE_WAITING,          
+    STATE_IN_DANGER,       
+    STATE_DEAD,            
 };
 // Типы задач, которые могут выполнять колонисты и роботы
 enum Task_type {
-    TASK_MINING,            // Добыча руды и полезных ископаемых
-    TASK_GREENHOUSE,        // Обслуживание теплицы и выращивание пищи
-    TASK_ENERGY,            // Производство и распределение энергии
-    TASK_REPAIR,            // Ремонт модулей и оборудования
-    TASK_MEDICAL,           // Лечение колонистов
-    TASK_EMERGENCY,         // Аварийные работы (пожары, утечки и т.д.)
-    TASK_CARGO,             // Перевозка грузов между модулями
-    TASK_MAINTENANCE        // Обслуживание оборудования
+    TASK_MINING,            
+    TASK_GREENHOUSE,       
+    TASK_ENERGY, 
+    TASK_REPAIR,  
+    TASK_MEDICAL,   
+    TASK_EMERGENCY,      
+    TASK_CARGO,             
+    TASK_MAINTENANCE      
 };
 // Типы роботов
 enum Robot_type {
-    ROBOT_MINING,           // Добывающий робот - работает в шахте
-    ROBOT_REPAIR,           // Ремонтный робот - чинит оборудование
-    ROBOT_MEDICAL,          // Медицинский робот - помогает докторам
-    ROBOT_CARGO             // Грузовой робот - перевозит ресурсы
+    ROBOT_MINING,           
+    ROBOT_REPAIR,          
+    ROBOT_MEDICAL,       
+    ROBOT_CARGO
 };
 // Состояния роботов
 enum Robot_state {
-    ROBOT_STATE_WORKING,        // Работает - выполняет задачу
-    ROBOT_STATE_MOVING,         // Перемещается - между точками
-    ROBOT_STATE_CHARGING,       // Заряжается - пополняет энергию
-    ROBOT_STATE_DAMAGED,        // Повреждён - требует ремонта
-    ROBOT_STATE_WAITING_FOR_TASK, // Ожидает задачи
-    ROBOT_STATE_DESTROYED,      // Уничтожен - исключён из модели
-    ROBOT_STATE_MAINTENANCE     // На обслуживании - плановый ремонт
-};
+    ROBOT_STATE_WORKING,       
+    ROBOT_STATE_MOVING,        
+    ROBOT_STATE_CHARGING,    
+    ROBOT_STATE_DAMAGED,     
+    ROBOT_STATE_WAITING_FOR_TASK, 
+    ROBOT_STATE_DESTROYED,    
+    ROBOT_STATE_MAINTENANCE   
 // Функции для преобразования перечислений в строки (для вывода на экран)
 string spec_to_str(Colonist_spec spec);
 string state_to_str(Colonist_state state);
