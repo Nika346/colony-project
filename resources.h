@@ -1,7 +1,3 @@
-//
-// Created by Вероника on 06.07.2026.
-//
-
 #ifndef MYPROJECT_RESOURSES_H
 #define MYPROJECT_RESOURSES_H
 #pragma once
@@ -36,7 +32,6 @@ public:
         bool isEmpty() const;
         bool isFull() const;
 
-
         ResourceType getType() const { return type; }
         string getName() const { return name; }
         double getCurrentAmount() const { return currentAmount; }
@@ -46,7 +41,6 @@ public:
         double getMinAllowedLevel() const { return minAllowedLevel; }
         double getCriticalLevel() const { return criticalLevel; }
 
-
         void setCurrentAmount(double amount);
         void setMaxCapacity(double capacity);
         void setProductionRate(double rate);
@@ -54,8 +48,6 @@ public:
         double getPercentage() const;  // процент заполнения
         void resetRates();             // сбросить скорости на 0
 };
-
-
 // Менеджер ресурсов колонии
 class ColonyResourceManager {
 private:
@@ -66,6 +58,4 @@ public:
         Resource& get_resource(ResourceType type){return resources[type];} // мне нужна эта строчка для получения ресурсов
         ResourcesAvailability checkAndConsumeForGroup(double oxygenNeeded, double waterNeeded, double foodNeeded);
 };
-
-
 #endif //MYPROJECT_RESOURSES_H
