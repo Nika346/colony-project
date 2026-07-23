@@ -1,6 +1,4 @@
-//
-// Created by Вероника on 06.07.2026.
-//
+
 #ifndef MYPROJECT_COLONIST_H
 #define MYPROJECT_COLONIST_H
 #pragma once
@@ -12,63 +10,38 @@
 #include <algorithm>
 using namespace std;
  // Структура для хранения норм потребления ресурсов одним колонистом
- // Каждый колонист потребляет кислород, воду и пищу в определенном количестве
 struct Resources_consumption {
-    double oxygen;  // Потребление кислорода за шаг симуляции
-    double water;   // Потребление воды за шаг симуляции
-    double food;    // Потребление пищи за шаг симуляции
-
+    double oxygen; 
+    double water;  
+    double food;  
     // Конструктор со значениями по умолчанию
     Resources_consumption(double o = 0.05, double w = 0.12, double f = 0.06):
         oxygen(o), water(w), food(f) {};
 };
- // Класс, представляющий группу колонистов с одинаковыми характеристиками
- // Для упрощения модели колонисты объединены в группы по специализации
 
 class ColonistGroup {
 private:
-    // Идентификатор группы (уникальное имя)
     string group_id;
-    // Количество колонистов в группе
     int count;
-    // Специализация группы (инженеры, биологи и т.д.)
     Colonist_spec specialization;
-    // Состояние здоровья группы (в процентах, 0-100)
-    double health;
-    // Уровень усталости (в процентах, 0-100, растет при работе)
-    double fatigue;
-    // Текущее состояние группы (работает, отдыхает и т.д.)
+    double health;    // (в процентах, 0-100)
+    double fatigue;     // Уровень усталости (в процентах, 0-100, растет при работе)
     Colonist_state state;
-    // Текущая задача (что делают колонисты)
     Task_type current_task;
-    // Модуль, в котором сейчас находится группа
     ModuleType current_module;
     ColonyModule* module_cur;
-    // Нормы потребления ресурсов для одного колониста
-    Resources_consumption resources_consumption;
-    // Может ли группа работать (зависит от здоровья и усталости)
-    bool opportunity_to_work;
+    Resources_consumption resources_consumption;    // Нормы потребления ресурсов для одного колониста
+    bool opportunity_to_work;    // (зависит от здоровья и усталости)
     Resources_consumption consumptionRatePerPerson;
     Robot* transportRobot;
     ColonyModule* start_module;
     ColonyModule* end_module;
 
 public:
-     // Конструктор группы колонистов
-     // group_id - идентификатор группы
-     // specialization - специализация
-     // count - количество колонистов
-     // current_module - текущий модуль
-     // current_task - текущая задача
-     // health - уровень здоровья (по умолчанию 100)
-     // fatigue - уровень усталости (по умолчанию 0)
-     // consumption - нормы потребления ресурсов
-
     ColonistGroup(string& group_id, Colonist_spec specialization, int count,
                   ColonyModule* moduleptr, Task_type current_task,
                   double health = 100.0, double fatigue = 0.0,
                   const Resources_consumption& consumption = Resources_consumption());
-
     // ГЕТТЕРЫ
     string get_group_id() const { return group_id; }
     int get_count() const { return count; }
@@ -100,35 +73,20 @@ public:
     void move_to_module(ColonyModule* mod);
     ColonyModule* get_end_module() const { return end_module; }
     void set_end_module(ColonyModule* mod) { end_module = mod; }
-
-     //Метод для обновления здоровья колонистов
      //Здоровье снижается при недостатке ресурсов или высоком уровне усталости
-     //oxygen_available - достаточно ли кислорода
-     //water_available - достаточно ли воды
-     //food_available - достаточно ли пищи
-     //return количество погибших колонистов (если здоровье упало до 0)
+     //_available - достаточно ли кислорода/воды/пищи
      int update_health(const ResourcesAvailability& availability);
-
-     //Метод для обновления уровня усталости
      //Усталость растет при работе и снижается во время отдыха
-     //is_working - работают ли колонисты
-     //return true, если колонисты могут продолжать работать
     bool update_fatigue(bool is_working);
      //Проверка, может ли группа выполнять указанную задачу.
      //Зависит от специализации и текущего состояния
-     // task - проверяемая задача
-     //return true, если могут выполнять
     bool can_perform_task(Task_type task) const;
      //Получение общего количества потребляемых ресурсов группой
      //return структура с общим потреблением (умножается на количество колонистов)
     Resources_consumption get_total_consumption() const;
      //Добавление новых колонистов в группу
-     //amount - количество новых колонистов
     void add_colonists(int amount);
-     //Удаление колонистов из группы (в случае гибели)
-     //param amount - количество удаляемых колонистов
-
+     //Удаление колонистов из группы (в случае гибели
     void remove_colonists(int amount);
 };
-
 #endif //MYPROJECT_COLONIST_H
