@@ -24,14 +24,12 @@ Colony::Colony() : currentHour(0) {
     cin >> n;
     createTransportNetwork(n);
     cout << "Колония успешно создана!" << endl;
-    //СОЗДАНИЕ РОБОТОВ
     cout << "\n--- СОЗДАНИЕ РОБОТОВ ---" << endl;
     int robotCount;
     cout << "Сколько роботов вы хотите создать? ";
     cin >> robotCount;
     for (int i = 0; i < robotCount; i++) {
         cout << "\nРобот №" << (i + 1) << ":" << endl;
-        // Выбор типа робота
         int typeChoice;
         cout << "Выберите тип робота:" << endl;
         cout << "1. Ремонтный" << endl;
@@ -42,25 +40,22 @@ Colony::Colony() : currentHour(0) {
         Robot_type robotType;
         if (typeChoice == 1) robotType = ROBOT_REPAIR;
         else if (typeChoice == 2) robotType = ROBOT_CARGO;
-        else robotType = ROBOT_MINING; // По умолчанию добывающий
-        // Выбор модуля для размещения
+        else robotType = ROBOT_MINING; 
         cout << "В каком модуле разместить робота? (введите ID модуля): ";
         int moduleId;
         cin >> moduleId;
-        // Ищем модуль по ID
         ColonyModule* targetModule = nullptr;
-        for (const auto& mod : modules) { // modules — это вектор умных указателей shared_ptr
+        for (const auto& mod : modules) { 
             if (mod->getId() == moduleId) {
-                targetModule = mod.get(); // Чтобы превратить умный указатель в обычный, вызывается метод .get()
+                targetModule = mod.get(); 
                 break;
             }
         }
         if (targetModule == nullptr) {
             cout << "Модуль с ID " << moduleId << " не найден! Робот размещен в первом модуле." << endl;
-            targetModule = modules[0].get(); // Если ошиблись, ставим в первый модуль
+            targetModule = modules[0].get(); 
         }
-        // Создаем робота и добавляем в список
-        int robotId = i + 1; // ID робота начинается с 1
+        int robotId = i + 1;
         double robotSpeed = speedDist(rng);
         robots.push_back(make_shared<Robot>(robotId, robotType, targetModule, robotSpeed, 100.0));
         cout << "Робот " << robotId << " (" << robot_type_to_str(robotType) << ") создан в модуле "
@@ -73,7 +68,6 @@ Colony::Colony() : currentHour(0) {
     cin >> groupCount;
     for (int i = 0; i < groupCount; i++) {
         cout << "\nГруппа №" << (i + 1) << ":" << endl;
-        // Выбор профессии
         int specChoice;
         cout << "Выберите специализацию группы:" << endl;
         cout << "1. Инженеры" << endl;
@@ -90,15 +84,12 @@ Colony::Colony() : currentHour(0) {
         else if (specChoice == 3) { spec = SPEC_BIOLOGIST; groupName = "Биологи"; }
         else if (specChoice == 4) { spec = SPEC_DOCTOR; groupName = "Доктора"; }
         else { spec = SPEC_REGULAR; groupName = "Обычные жители"; }
-        // Количество человек в группе
         int personCount;
         cout << "Сколько колонистов в этой группе? ";
         cin >> personCount;
-        // Выбор модуля для размещения
         cout << "В каком модуле разместить группу? (введите ID модуля): ";
         int moduleId;
         cin >> moduleId;
-        // Ищем модуль по ID
         ColonyModule* targetModule = nullptr;
         for (const auto& mod : modules) {
             if (mod->getId() == moduleId) {
@@ -110,7 +101,6 @@ Colony::Colony() : currentHour(0) {
             cout << "Модуль с ID " << moduleId << " не найден! Группа размещена в первом модуле." << endl;
             targetModule = modules[0].get();
         }
-        // Создаем группу колонистов и добавляем в список
         double ranHel = dist75_120(rng);
         string fullGroupName = groupName + " " + to_string(i + 1);
         colonistGroups.push_back(make_shared<ColonistGroup>(
@@ -184,7 +174,7 @@ void Colony::createModules(){
     cout << "Создано модулей: " << currentId << "\n";
 }
 void Colony::createTransportNetwork(int totalRoutes) {
-    uniform_real_distribution<double> lengthDist(10.0, 100.0); // Генерируем случайную длину (10-100 метров)
+    uniform_real_distribution<double> lengthDist(10.0, 100.0);
     uniform_int_distribution<int> capacityDist(5, 20);
 
     int minRoutes = modules.size() - 1;
@@ -199,19 +189,18 @@ void Colony::createTransportNetwork(int totalRoutes) {
     for (size_t i = 0; i < modules.size(); i++) {
         moduleIndices.push_back(i);
     }
-    shuffle(moduleIndices.begin(), moduleIndices.end(), rng); // Перемешиваем
+    shuffle(moduleIndices.begin(), moduleIndices.end(), rng); 
     for (size_t i = 0; i < moduleIndices.size() - 1; i++) {
         int j1 = moduleIndices[i];
         int j2 = moduleIndices[i + 1];
         double length = lengthDist(rng);
         auto route = make_shared<TransportRoute>(
-            routes.size(), modules[j1].get(), modules[j2].get(), length); //указатель на объект класса пути
-        //route->setCapacity(capacityDist(rng)); // случайная пропускная способность от 5 до 20
-        route->setState(RouteState::OPERATIONAL); // изначально все пути исправны и доступны колонистам и роботам
+            routes.size(), modules[j1].get(), modules[j2].get(), length);
+        route->setState(RouteState::OPERATIONAL);
         route->setUsableByRobots(true);
         route->setUsableByColonists(true);
-        routes.push_back(route); // добавляем в список путей
-        modules[j1]->ModulesRoutes.push_back(modules[j2]); //добавляем указатели на соседние модули
+        routes.push_back(route); 
+        modules[j1]->ModulesRoutes.push_back(modules[j2]); 
         modules[j2]->ModulesRoutes.push_back(modules[j1]);
 
     }
@@ -247,14 +236,11 @@ void Colony::createTransportNetwork(int totalRoutes) {
 // Основной шаг симуляции (один час)
 void Colony::tick() {
     vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
-    // 1. ПРОИЗВОДСТВО РЕСУРСОВ (с проверкой наличия работников)
+    // 1. ПРОИЗВОДСТВО РЕСУРСОВ 
     for (const auto& mod : modules) {
-        // Модуль должен работать
         if (!mod->isOperational()) continue;
         bool hasWorkersHere = false;
-        // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
         for (const auto& group : colonistGroups) {
-            // Группа жива, находится в этом модуле и может работать
             if (group->get_state() == STATE_WORKING &&
                 group->get_count() > 0 &&
                 group->get_opportunity_to_work() &&
@@ -266,14 +252,12 @@ void Colony::tick() {
         }
         for (const auto& rob : robots){
             if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING &&
-            rob->get_module() == mod.get()) {   // робот находится в этом модуле
+            rob->get_module() == mod.get()) {  
                     hasWorkersHere = true;
                     break;
             }
         }
-        // Если в модуле нет работников, он не производит ресурсы
         if (!hasWorkersHere) continue;
-        // Если работники есть — производим
         for (auto const& [ResType, amount] : mod->getProduction()) {
             if (amount > 0) {
                 resources.get_resource(ResType).produce(amount);
@@ -293,7 +277,6 @@ void Colony::tick() {
     for (const auto& mod : modules) {
         if (!mod->isOperational()) continue;
         bool hasWorkersHere = false;
-        // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
         for (const auto& group : colonistGroups) {
             if (group->get_state() == STATE_WORKING && group->get_count() > 0 && group->get_opportunity_to_work() && group->get_end_module()==mod.get() &&
                 mod->spec.find(group->get_specialization())!=mod->spec.end()) {
@@ -316,7 +299,7 @@ void Colony::tick() {
                 if (!resources.get_resource(ResType).consume(amount)) {
                     mod->setState(ModuleState::OFFLINE);
                     cout << "Час " << currentHour << ": Модуль " << mod->getName() << " отключен (нехватка ресурса)!" << endl;
-                    break; // Прерываем проверку для этого модуля
+                    break; 
                 }
                 switch (ResType) {
                     case ResourceType::FOOD: stats.food_consumed += amount; break;
@@ -357,7 +340,6 @@ void Colony::tick() {
     // 4. Обновление активных аварий
     updateActiveAccidents();
 
-    // лечение в медицинских модулях
     process_medical_modules();
 
     // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
@@ -369,7 +351,6 @@ void Colony::tick() {
     }
     // 6. ПОТРЕБЛЕНИЕ РЕСУРСОВ КОЛОНИСТАМИ
     for (const auto& group : colonistGroups) {
-        // Если группа мертва или пуста — пропускаем её
         if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
         // "Сколько нужно кислорода, воды и еды на этот час группе?"
         Resources_consumption need = group->get_total_consumption();
@@ -378,19 +359,15 @@ void Colony::tick() {
         avail.oxygen_ok = resources.get_resource(ResourceType::OXYGEN).consume(need.oxygen);
         avail.water_ok = resources.get_resource(ResourceType::WATER).consume(need.water);
         avail.food_ok = resources.get_resource(ResourceType::FOOD).consume(need.food);
-        // Передаём результаты (чего хватило, а чего нет) в группу.
-        // Если чего-то не хватило, здоровье снизится.
         int dead = group->update_health(avail);
         if (avail.oxygen_ok) stats.oxygen_consumed += need.oxygen;
         if (avail.water_ok) stats.water_consumed += need.water;
         if (avail.food_ok) stats.food_consumed += need.food;
-        // Если кто-то умер — пишем в консоль
         if (dead > 0) {
             cout << "Час " << currentHour << ": Группа " << group->get_group_id()
                  << " потеряла " << dead << " колонистов!" << endl;
         }
     }
-    // Автоматический перевод групп в рабочий режим
     for (auto& group : colonistGroups) {
         if (group->get_state() != STATE_WAITING) continue;
         if (!group->get_opportunity_to_work()) continue;
@@ -434,9 +411,7 @@ void Colony::tick() {
         }
     }
     // 7. ЗАДАЧИ И РОБОТЫ
-    // Проверяем, могут ли роботы двигаться в текущую погоду
     bool canRobotsMove = weather.get_speed() > 0.0;
-    // Проверка на наличие грузовых роботов в целом
     bool hasCargoRobot = false;
     int rob_m = 0; //свободных кол-во добывающих роботов
     for (const auto& r : robots) {
@@ -447,7 +422,6 @@ void Colony::tick() {
             rob_m++;
         }
     }
-        // Анализ всех модулей, если робот есть и он может двигаться
     if (hasCargoRobot && canRobotsMove) {
         map<ModuleType, int> jobOpenings;
         map<ModuleType, vector<ColonyModule*>> modulesByType;
@@ -467,13 +441,12 @@ void Colony::tick() {
         // Проверяем все группы колонистов
         for (auto& group : colonistGroups) {
             if (group->get_state() == STATE_DEAD || group->get_count() == 0) continue;
-            if (group->get_transportRobot() != nullptr) continue;  // Уже перемещаются
+            if (group->get_transportRobot() != nullptr) continue; 
 
             ModuleType neededModuleType;
             bool needsTransfer = false;
-            // Сопоставляем специализацию с типом модуля
             // 1. ПРИОРИТЕТ 1: УСТАВШИЕ -> В ЖИЛОЙ МОДУЛЬ
-            if (group->get_fatigue() > 60 && group->get_module() != ModuleType::HABITAT) {
+            if (group->get_fatigue() > 60 && group->get_module()!= ModuleType::HABITAT) {
                 neededModuleType = ModuleType::HABITAT;
                 needsTransfer = true;
                 }
@@ -537,16 +510,11 @@ void Colony::tick() {
                 }
             }
             if (needsTransfer && !modulesByType[neededModuleType].empty()) {
-                if (group->get_module() == neededModuleType) continue;// Группа уже здесь, пропускаем
-
-                // Берём первый подходящий модуль этого типа
+                if (group->get_module() == neededModuleType) continue;
                 ColonyModule* targetMod = modulesByType[neededModuleType][0];
 
-                // Создаём задачу на перевозку этой конкретной группы
                 Task moveTask(TASK_CARGO, targetMod, targetMod->getImportanceLevel(), 1.0, 10);
                 taskQueue.addTask(moveTask);
-
-                // Защита от отрицательных значений
                 if (jobOpenings[neededModuleType] > 0) {
                     jobOpenings[neededModuleType] -= 1;
                 }
@@ -556,23 +524,20 @@ void Colony::tick() {
     }
     // Роботы берут задачи из очереди
     for (const auto& robot : robots) {
-        // Если робот не свободен — пропускаем
         if (robot->get_state() != ROBOT_STATE_WAITING_FOR_TASK) continue;
         if (robot->needs_maintenance()) continue;
         if (!canRobotsMove) continue;
         if (!taskQueue.isEmpty()) {
             Task currentTask = taskQueue.peek();
-            if (!robot->can_perform_task(currentTask.getType())) continue;  // Этот робот не может выполнять такую задачу — пропускаем
-            currentTask = taskQueue.getHighestPriority();// Теперь безопасно забираем задачу из очереди
+            if (!robot->can_perform_task(currentTask.getType())) continue; 
+            currentTask = taskQueue.getHighestPriority();
             cout << "Робот " << robot->get_id() << " взял задачу " << currentTask.getNameTarget() << endl;
             ColonyModule* targetMod = currentTask.getTargetModule();
             if (targetMod != nullptr && robot->assign_task(currentTask.getType(), currentTask.getComplexity(), weather)) {
-                // Находим группу, которую нужно везти к этому модулю
                 ColonistGroup* groupToTransport = nullptr;
                 if (robot->get_type() == ROBOT_CARGO && currentTask.getType() == TASK_CARGO) {
                     for (auto& group : colonistGroups) {
                         if (group->get_module() != targetMod->getType() &&group->get_state() != STATE_DEAD &&group->get_transportRobot() == nullptr) {
-                            // Проверяем, подходит ли специализация
                             bool matches = false;
                             switch (group->get_specialization()) {
                                 case SPEC_MINER:
@@ -616,7 +581,7 @@ void Colony::tick() {
                 else if (currentTask.getType() == TASK_MINING && robot->get_type() == ROBOT_MINING) {
                 cout << "Добывающий робот " << robot->get_id() << " направлен добывать в модуль " << targetMod->getName() << endl;
                 }
-                // Робот назначил задачу. Теперь ищем путь!
+                // Роботу назначили задачу. Теперь ищем путь
                 vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
                 if (!path.empty()) {
                     robot->setRoute(path, targetMod);
@@ -631,7 +596,7 @@ void Colony::tick() {
                 }
                 else {
                     cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
-                    robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // возвращаем в ожидание
+                    robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); 
                 }
             }
         }
@@ -649,7 +614,6 @@ void Colony::tick() {
         if (robot->hasArrived()) {
             robot->set_state(ROBOT_STATE_WORKING);
             if (robot->get_type() == ROBOT_REPAIR) {
-                // Начинаем/продолжаем ремонт
                 currentTarget->startRepair(robot.get());
             } else if (robot->get_type() == ROBOT_CARGO) {
                 robot->dropOffPassengers();
@@ -661,7 +625,6 @@ void Colony::tick() {
             }
             continue;
         }
-        // Если ещё не прибыл — двигаемся
         robot->moveOneStep(modules);
     }
     // ==================== 9. ПРОДОЛЖЕНИЕ РЕМОНТА ====================
@@ -678,23 +641,18 @@ void Colony::tick() {
         }
     }
 
-    // Обновляем состояние каждого робота (тратит энергию, стареет)
     for (const auto& robot : robots) {
         robot->update();
     }
     // ОТПРАВЛЯЕМ ПОВРЕЖДЁННЫХ РОБОТОВ В РЕМЦЕХ
-     // Находим все ремонтные цеха
     vector<RepairBay*> repairBays;
     for (const auto& mod : modules) {
         if (mod->getType() == ModuleType::REPAIR_BAY && mod->isOperational()) {
             repairBays.push_back(dynamic_cast<RepairBay*>(mod.get()));
         }
     }
-    // Ищем роботов с высоким износом, Если износ > 70% — отправляем в ремонт
     for (auto& robot : robots) {
-        // Пропускаем уже ремонтирующихся или уничтоженных
         if (robot->get_state() != ROBOT_STATE_MAINTENANCE && robot->get_state() != ROBOT_STATE_DESTROYED && robot->get_wear_level() > 70){
-            // Ищем цех со свободным местом
             for (auto* bay : repairBays) {
                 if (bay->hasCapacity()) {
                     bay->acceptRobotForRepair(robot.get());
@@ -834,7 +792,7 @@ void Colony::generateAccident() {
         }
     }
 
-    // 8. Создание задачи на ремонт (используем targetModule)
+    // Создание задачи на ремонт (используем targetModule)
     Task_type taskType = TASK_REPAIR;
     switch (accident->get_type()) {
         case Accident_type::Oxyden_leakege:
@@ -874,25 +832,21 @@ void Colony::generateAccident() {
 }
 
 void Colony::updateActiveAccidents() {
-    // Идём по всем активным авариям
     for (auto it = activeAccidents.begin(); it != activeAccidents.end(); ) {
-        Accident* acc = *it;  // Получаем указатель на аварию
-        acc->update();// Вызываем update() — он уменьшает time_to_end на 1
-        // Проверяем, завершилась ли авария
+        Accident* acc = *it;  
+        acc->update();
         if (!acc->isActive()) {
             stats.accidents_resolved++;
             stats.total_repair_time += acc->get_duration();
             delete acc;  // Освобождаем память!
-            it = activeAccidents.erase(it);  // Удаляем элемент из вектора
+            it = activeAccidents.erase(it);  
         } else {
-            // Авария ещё активна — переходим к следующей
             ++it;
         }
     }
 }
 
 void Colony::repairRobotsInBay() {
-    // Находим все ремонтные цеха
     for (const auto& mod : modules) {
         if (mod->getType() != ModuleType::REPAIR_BAY) continue;
         if (!mod->isOperational()) continue;
@@ -1216,32 +1170,29 @@ void Colony::save_statistics(const string& file_name) const {
 }
 
 // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
-shared_ptr<ColonyModule> Colony::findModuleById(int id) const { // Найти модуль по ID
-    for (const auto& mod : modules) { //mod - умный указатель на модуль, проходит по всему вектору modules
+shared_ptr<ColonyModule> Colony::findModuleById(int id) const { 
+    for (const auto& mod : modules) {
         if (mod->getId() == id) {
-            return mod; // возращает указатель на модуль
+            return mod;
         }
     }
     return nullptr;
 }
 vector<shared_ptr<TransportRoute>> Colony::getRoutesForModule(int moduleId) const { // Найти все пути, связанные с модулем
     vector<shared_ptr<TransportRoute>> result; ///путой вектор путей (будет содержать пути с искомым модулем)
-    for (const auto& route : routes) { // route - умный указатель на путь
-        int startId = route->getStartModule()->getId(); //id первого модуля
-        int endId = route->getEndModule()->getId();     //id второго модуля
-        if (startId == moduleId || endId == moduleId) { // Если модуль является началом или концом пути
+    for (const auto& route : routes) { 
+        int startId = route->getStartModule()->getId(); 
+        int endId = route->getEndModule()->getId();   
+        if (startId == moduleId || endId == moduleId) { 
             result.push_back(route);
         }
     }
-    return result; //возращаем вектор путей
+    return result;
 }
-// Алгоритм Дейкстры — поиск кратчайшего пути по времени
 vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const Robot& robot, const Weather& weather) {
-    // Если старт и конец совпадают
     if (startModuleId == endModuleId) {
         return {startModuleId};
     }
-    // Проверка, что модули существуют
     if (!findModuleById(startModuleId) || !findModuleById(endModuleId)) {
         cout << "Ошибка: один из модулей не найден!\n";
         return {};
@@ -1249,24 +1200,19 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
     map<int, double> dist; // Расстояния (время) от старта до каждого модуля
     map<int, int> parent; // Откуда пришли в каждый модуль (для восстановления пути)
     // Обработанные модули
-    set<int> visited;    // Обработанные модули, set - тоже самое, что и вектор, но в него нельзя добавить два одинаковых значений
-
-    // Инициализация: все расстояния = бесконечность
+    set<int> visited;    // Обработанные модули
     for (const auto& mod : modules) {
         dist[mod->getId()] = numeric_limits<double>::infinity();
     }
-
-    // Расстояние до старта = 0
     dist[startModuleId] = 0.0;
     parent[startModuleId] = -1;
 
-    // Приоритетная очередь (min-heap по времени)
     priority_queue<PathNode, vector<PathNode>, greater<PathNode>> pq; //greater<PathNode> вызывает operator>, те сортирует по возрастанию времени прохождения
     pq.push({startModuleId, 0.0}); // добавляем стартовый узел графа
-    while (!pq.empty()) { //пока очередь не пустая
-        int currentId = pq.top().moduleId;// Берём модуль с наименьшим временем
+    while (!pq.empty()) {
+        int currentId = pq.top().moduleId;
         double currentTime = pq.top().time;
-        pq.pop(); // удаляем его из очереди
+        pq.pop(); 
         if (visited.count(currentId)) {// Если уже обработали — пропускаем
             continue;
         }
@@ -1278,7 +1224,6 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
         // Получаем все пути, связанные с текущим модулем
         auto connectedRoutes = getRoutesForModule(currentId);
         for (const auto& route : connectedRoutes) {
-            // Определяем соседний модуль
             int neighborId;
             if (route->getStartModule()->getId() == currentId) {//если текущий модуль начало пути - сосед это конец пути
                 neighborId = route->getEndModule()->getId();
@@ -1288,7 +1233,7 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
             if (visited.count(neighborId)) { // Если уже обработали — пропускаем
                 continue;
             }
-            if (!route->isPassable()) { // Проверяем, доступен ли путь
+            if (!route->isPassable()) { 
                 continue;
             }
             // Вычисляем время прохождения пути (учитывает робота, погоду и состояние пути)
@@ -1298,10 +1243,7 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
             if (travelTime == numeric_limits<double>::infinity()) {
                 continue;
             }
-
-            // Новое время = текущее + время перехода
             double newTime = currentTime + travelTime;
-
             // Если нашли более быстрый путь — обновляем
             if (newTime < dist[neighborId]) {
                 dist[neighborId] = newTime;
@@ -1310,18 +1252,15 @@ vector<int> Colony::findShortestPath(int startModuleId, int endModuleId, const R
             }
         }
     }
-    // Проверяем, достижима ли цель
     if (dist[endModuleId] == numeric_limits<double>::infinity()) {
         cout << "Путь от модуля " << startModuleId
              << " к модулю " << endModuleId << " не найден!\n";
         return {};
     }
-    // Восстанавливаем путь от конца к началу
     vector<int> path;
     for (int at = endModuleId; at != -1; at = parent[at]) {
         path.push_back(at);
     }
-    // Переворачиваем (от начала к концу)
     reverse(path.begin(), path.end());
     // Вывод информации о пути
     cout << "Найден путь от модуля " << startModuleId << " к модулю " << endModuleId << ":\n";
