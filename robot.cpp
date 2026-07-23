@@ -1,14 +1,9 @@
-// Created by Вероника on 06.07.2026.
 #include "robot.h"
 #include "colonist.h"
 #include <algorithm>  // для std::max, std::min
 #include <cmath>
 #include <climits>
 using namespace std;
-/*
- * Конструктор робота
- * Инициализирует все поля начальными значениями
- */
 Robot::Robot(int id, Robot_type type, ColonyModule* current_module,
              double speed, double max_energy)
     : currentPath(),
@@ -35,10 +30,6 @@ Robot::Robot(int id, Robot_type type, ColonyModule* current_module,
         this->speed = 1.0;
     }
 }
-/*
- * Назначение задачи роботу
- * Проверяет, может ли робот выполнить задачу, и назначает её
- */
 bool Robot::assign_task(Task_type task, int duration, const Weather& weather) {
     // Проверяем, может ли робот выполнять такую задачу
     if (!can_perform_task(task)) {
@@ -77,20 +68,15 @@ bool Robot::assign_task(Task_type task, int duration, const Weather& weather) {
          << " на " << time_to_complete_task << " шагов" << endl;
     return true;
 }
-/*
- * Обновление состояния робота (вызывается каждый шаг симуляции)
- */
-bool Robot::update() {
+bool Robot::update() { //Обновление состояния робота (вызывается каждый шаг симуляции)
     // Проверяем, не уничтожен ли робот
     if (state == ROBOT_STATE_DESTROYED) {
         return false;
     }
-    // Если робот повреждён, он не может работать
-    if (state == ROBOT_STATE_DAMAGED) {
+    if (state == ROBOT_STATE_DAMAGED) {    // Если робот повреждён, он не может работать
         return false;
     }
-    // Если робот на обслуживании, он не работает
-    if (state == ROBOT_STATE_MAINTENANCE) {
+    if (state == ROBOT_STATE_MAINTENANCE) {    // Если робот на обслуживании, он не работает
         // Во время обслуживания износ уменьшается
         wear_level = max(0.0, wear_level - 2.0);
         if (wear_level < 10) {
@@ -98,16 +84,14 @@ bool Robot::update() {
         }
         return true;
     }
-    // Если робот заряжается
-    if (state == ROBOT_STATE_CHARGING) {
+    if (state == ROBOT_STATE_CHARGING) {    // Если робот заряжается
         energy_charge = min(max_energy, energy_charge + 5.0);  // Зарядка 5% за шаг
         if (energy_charge >= max_energy * 0.95) {
             state = ROBOT_STATE_WAITING_FOR_TASK;
         }
         return true;
     }
-    // Если робот перемещается
-    if (state == ROBOT_STATE_MOVING) {
+    if (state == ROBOT_STATE_MOVING) { // Если робот перемещается
         // Расход энергии при перемещении
         energy_charge = max(0.0, energy_charge - 0.5);
         if (energy_charge <= 0) {
@@ -117,8 +101,7 @@ bool Robot::update() {
         }
         return true;
     }
-    // Если робот работает над задачей
-    if (state == ROBOT_STATE_WORKING) {
+    if (state == ROBOT_STATE_WORKING) {// Если робот работает над задачей
         // Расход энергии при работе
         double energy_consumption = 1.0;
         if (type == ROBOT_MINING || type == ROBOT_REPAIR) {
@@ -163,9 +146,6 @@ bool Robot::update() {
     }
     return state == ROBOT_STATE_WORKING || state == ROBOT_STATE_MOVING;
 }
-/*
- * Зарядка робота (восстановление энергии)
- */
 bool Robot::charge(double amount) {
     if (state == ROBOT_STATE_DESTROYED) {
         return false;
@@ -174,9 +154,6 @@ bool Robot::charge(double amount) {
     state = ROBOT_STATE_CHARGING;
     return true;
 }
-/*
- * Повреждение робота (авария, удар и т.д.)
- */
 bool Robot::take_damage(double damage) {
     if (state == ROBOT_STATE_DESTROYED) {
         return false;
@@ -192,9 +169,6 @@ bool Robot::take_damage(double damage) {
     }
     return state != ROBOT_STATE_DESTROYED;
 }
-/*
- * Ремонт робота (восстановление после повреждений)
- */
 void Robot::repair(double repair_amount) {
     if (state == ROBOT_STATE_DESTROYED) {
         return;
@@ -205,10 +179,6 @@ void Robot::repair(double repair_amount) {
         cout << "Робот " << id << " отремонтирован (износ " << wear_level << "%)" << endl;
     }
 }
-/*
- * Проверка возможности выполнения задачи
- * Зависит от типа робота
- */
 bool Robot::can_perform_task(Task_type task) const {
     // Проверяем состояние
     if (state == ROBOT_STATE_DESTROYED || state == ROBOT_STATE_DAMAGED) {
@@ -228,26 +198,19 @@ bool Robot::can_perform_task(Task_type task) const {
             return false;
     }
 }
-/*
- * Может ли робот двигаться
- */
 bool Robot::can_move() const {
     return state != ROBOT_STATE_DESTROYED &&
            state != ROBOT_STATE_DAMAGED &&
            state != ROBOT_STATE_CHARGING &&
            energy_charge > 5;
 }
-
 bool Robot::can_move(const Weather& weather) const{
     if (!can_move()) return false;
     return weather.get_speed() > 0.0;
 }
-
 double Robot::get_now_speed(const Weather& weather) const{
     return speed * weather.get_speed();
 }
-
-
 void Robot::setRoute(const vector<int>& path, ColonyModule* target) {
     currentPath = path;
     targetModule = target;
@@ -265,7 +228,6 @@ void Robot::moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules) {
             isMoving = false;
             cout << "Робот " << id << " прибыл в пункт назначения!" << endl;
             dropOffPassengers();
-            // Если это грузовой робот и он выполняет перевозку
             if (type == ROBOT_CARGO && current_task == TASK_CARGO) {
                 cout << "Грузовой робот " << id << " доставил колонистов на рабочее место!" << endl;
             }
@@ -285,16 +247,12 @@ void Robot::moveOneStep(const vector<shared_ptr<ColonyModule>>& allModules) {
 bool Robot::hasArrived() const {
     return static_cast<size_t>(pathIndex) >= currentPath.size();
 }
-
-
 void Robot::setPassengers(ColonistGroup* group) {
     passengers = group;
     if (group) {
         cout << "Робот " << id << " взял на борт группу " << group->get_group_id() << endl;
     }
 }
-
-
 void Robot::dropOffPassengers() {
     if (passengers) {
         cout << "Робот " << id << " высадил группу " << passengers->get_group_id() << " в модуле " << current_module->getName() << endl;
