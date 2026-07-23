@@ -93,7 +93,7 @@ Greenhouse::Greenhouse(int id, string name)
       efficiency(1.0f) {
     setConsumption(ResourceType::WATER, 8.0);
     setConsumption(ResourceType::ENERGY, 5.0);
-    setProduction(ResourceType::FOOD, 6.0);
+    setProduction(ResourceType::FOOD, 9.0);
     setProduction(ResourceType::OXYGEN, 10.0);
     spec = {SPEC_BIOLOGIST, SPEC_REGULAR};
 }
@@ -106,7 +106,7 @@ void Greenhouse::setWeatherEffect(float modifier) {
 SolarPowerPlant::SolarPowerPlant(int id, string name, float baseProd)
     : ColonyModule(id, name, ModuleType::SOLAR_POWER, 60, 7),
       baseProduction(baseProd), weatherEfficiency(1.0f) {
-    setProduction(ResourceType::ENERGY, baseProd);
+    setProduction(ResourceType::ENERGY, baseProd * 2.0f);
     spec = {SPEC_ENGINEER};
 }
 void SolarPowerPlant::setWeatherModifier(float modifier) {
@@ -122,7 +122,7 @@ NuclearPowerPlant::NuclearPowerPlant(int id, string name, float baseProd)
     : ColonyModule(id, name, ModuleType::NUCLEAR_POWER, 120, 9),
       baseProduction(baseProd), fuelAmount(100.0), maxFuel(100.0),
       fuelConsumptionRate(5.0) {
-    setProduction(ResourceType::ENERGY, baseProd);
+    setProduction(ResourceType::ENERGY, baseProd * 2.0f);
     setConsumption(ResourceType::FUEL, fuelConsumptionRate);
     spec = {SPEC_ENGINEER};
 }
@@ -133,7 +133,7 @@ void NuclearPowerPlant::addFuel(double amount) {
 
 // Mine
 Mine::Mine(int id, string name, int productionRate)
-    : ColonyModule(id, name, ModuleType::MINE, 90, 7),
+    : ColonyModule(id, name, ModuleType::MINE, 90, 9),
       miningSpeed(productionRate) {
     setConsumption(ResourceType::ENERGY, 15.0);
     setProduction(ResourceType::ORE, productionRate);
@@ -147,7 +147,7 @@ WaterRecycler::WaterRecycler(int id, string name)
     : ColonyModule(id, name, ModuleType::WATER_RECYCLER, 70, 10),
       recyclingEfficiency(1.0f) {
     setConsumption(ResourceType::ENERGY, 10.0);
-    setProduction(ResourceType::WATER, 12.0);
+    setProduction(ResourceType::WATER, 36.0 * 2);
     spec = {SPEC_ENGINEER};
 }
 
@@ -252,7 +252,7 @@ int RepairBay::repairAllRobots() {
         // Если износ стал достаточно низким — отпускаем робота
         if (newWear < 30) {
             // МЕНЯЕМ СТАТУС НА "ОЖИДАЕТ ЗАДАЧУ"
-            robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);    
+            robot->set_state(ROBOT_STATE_WAITING_FOR_TASK);
             it = robotsInRepair.erase(it);  // Удаляем из списка
             repairedCount++;
         } else {
@@ -269,5 +269,3 @@ void RepairBay::removeRobotFromRepair(Robot* robot) {
         robotsInRepair.erase(it);
     }
 }
-
-
