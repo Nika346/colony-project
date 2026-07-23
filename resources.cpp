@@ -1,25 +1,17 @@
-//
-// Created by Вероника on 06.07.2026.
-//
 #include "resources.h"
 #include <map>
 using namespace std;
-
-
-// Resource
 Resource::Resource()
     : type(ResourceType::OXYGEN), name(""), 
       currentAmount(0), maxCapacity(1000),
       productionRate(0), consumptionRate(0),
       minAllowedLevel(0), criticalLevel(10) {}
 
-
 Resource::Resource(ResourceType type, string name, double maxCap,
                    double minLevel, double critLevel)
     : type(type), name(name), currentAmount(0), maxCapacity(maxCap),
       productionRate(0), consumptionRate(0),
       minAllowedLevel(minLevel), criticalLevel(critLevel) {}
-
 
 bool Resource::consume(double amount) {
     if (currentAmount < amount) {
@@ -72,15 +64,12 @@ void Resource::resetRates() {
     consumptionRate = 0;
 }
 
-
-// ColonyResourceManager
 ColonyResourceManager::ColonyResourceManager() {
     initializeResources();
 }
 void ColonyResourceManager::initializeResources() {
     // Инициализация всех типов ресурсов
-
-
+    
     resources[ResourceType::OXYGEN] = Resource(
         ResourceType::OXYGEN, "Кислород", 
         1000.0,  // макс. запас
