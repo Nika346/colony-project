@@ -1,6 +1,3 @@
-//
-// Created by Вероника on 06.07.2026.
-//
 #ifndef MYPROJECT_ROBOT_H
 #define MYPROJECT_ROBOT_H
 #pragma once
@@ -10,10 +7,6 @@
 #include <iostream>
 #include <string>
 using namespace std;
-/**
- * Класс, представляющий робота в колонии
- * Роботы используются для выполнения опасных, повторяющихся или технически сложных задач
- */
 class Robot {
 private:
     vector<int> currentPath;      // Список ID модулей (маршрут)
@@ -50,18 +43,9 @@ public:
     bool hasArrived() const;
     vector<int> getCurrentPath() const { return currentPath; }
     ColonyModule* getTargetModule() const { return targetModule; }
-
     void setPassengers(ColonistGroup* group); //добавить пассажиров
     ColonistGroup* getPassengers() const { return passengers; }  //посмотреть пассажиров
     void dropOffPassengers(); //высадить пассажиров
-    /*
-     * Конструктор робота
-     * id - уникальный идентификатор
-     * type - тип робота
-     * current_module - модуль, где находится
-     * speed - скорость перемещения
-     * max_energy - максимальный заряд энергии
-     */
     Robot(int id, Robot_type type, ColonyModule* current_module = nullptr,
           double speed = 1.0, double max_energy = 100.0);
     // ГЕТТЕРЫ
@@ -77,7 +61,6 @@ public:
     double get_efficiency() const { return efficiency; }
     double get_wear_level() const { return wear_level; }
     double get_now_speed(const Weather& weather) const; // эта функция вычисляет реальную скорость с учетом погоды
-   
     // СЕТТЕРЫ
     void set_module(ColonyModule* mod) { current_module = mod; }
     void set_state(Robot_state new_state) { state = new_state; }
@@ -85,7 +68,6 @@ public:
     void set_speed(double new_speed) { speed = new_speed; }
     /*
      * Назначить задачу роботу
-     * task - тип задачи
      * duration - продолжительность в шагах симуляции
      * true, если задача назначена успешно
      */
@@ -113,27 +95,14 @@ public:
      * repair_amount - количество восстанавливаемого здоровья
      */
     void repair(double repair_amount);
-    /*
-     * Проверка возможности выполнения задачи
-     * task - проверяемая задача
-     * return true, если может выполнить
-     */
     bool can_perform_task(Task_type task) const;
-    /*
-     * Может ли робот двигаться
-     * return true, если может перемещаться
-     */
     bool can_move() const;
     bool can_move(const Weather& weather) const; // для учета погоды
-    /*
-     * Получение текущего заряда в процентах
-     */
+     //Получение текущего заряда в процентах
     double get_charge_percentage() const {
         return (max_energy > 0) ? (energy_charge / max_energy) * 100.0 : 0.0;
     }
-    /*
-     * Проверка, нуждается ли робот в обслуживании
-     */
+    // Проверка, нуждается ли робот в обслуживании
     bool needs_maintenance() const {
         return wear_level > 70 || energy_charge < 20 || state == ROBOT_STATE_DAMAGED;
     }
