@@ -83,7 +83,6 @@ bool TransportRoute::isPassable(bool forRobots) const {
     }
 }
 
-
 bool TransportRoute::start_repair(Robot* repairRobot){
     if (state == RouteState::DESTROYED || state == RouteState::OPERATIONAL) {
         return false;
