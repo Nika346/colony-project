@@ -31,9 +31,12 @@ size_t PriorityTaskQueue::size() const {
     return pq.size();
 }
 
-
-
-
-
-
-
+bool PriorityTaskQueue::has_task(ColonyModule* mod) const {
+    priority_queue<Task, vector<Task>, TaskComparator> temp = pq; // копия
+    while (!temp.empty()) {
+        Task t = temp.top();
+        if (t.getTargetModule() == mod) return true;
+        temp.pop();
+    }
+    return false;
+}
