@@ -41,11 +41,28 @@ struct Statistics {
     double oxygen_produced = 0.0;
     double water_produced = 0.0;
     double energy_produced = 0.0;
+    double ore_produced = 0.0;
+    double fuel_produced = 0.0;
     double food_consumed = 0.0;
     double oxygen_consumed = 0.0;
     double water_consumed = 0.0;
     double energy_consumed = 0.0;
+    double fuel_consumed = 0.0;
     double avg_modules_health = 0.0;
+    int damaged_modules = 0;
+    int destroyed_modules = 0;
+    double total_repair_time = 0.0;
+    int accidents_resolved = 0;
+    int days_with_critical = 0;
+    int broken_robots = 0;
+    double avg_colonist_health = 0.0;
+
+    double sum_oxygen = 0.0;
+    double sum_water = 0.0;
+    double sum_food = 0.0;
+    double sum_energy = 0.0;
+
+    string final_status;
 };
 
 class Colony{
