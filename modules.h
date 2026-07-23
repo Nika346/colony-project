@@ -1,7 +1,3 @@
-//
-// Created by Вероника on 06.07.2026.
-//
-
 #ifndef MYPROJECT_MODULES_H
 #define MYPROJECT_MODULES_H
 #pragma once
@@ -14,10 +10,8 @@
 using namespace std;
 
 class Robot;
-class ColonistGroup;
+class ColonistGroup
 
-
-// Перечисление состояний модуля
 enum class ModuleState {
     WORKING,         // исправен
     DAMAGED,         // повреждён
@@ -26,8 +20,6 @@ enum class ModuleState {
     DESTROYED        // разрушен
 };
 
-
-// Перечисление типов модулей
 enum class ModuleType {     //добавить ремонтный цех
     HABITAT,           // жилой модуль
     GREENHOUSE,        // теплица
@@ -40,7 +32,6 @@ enum class ModuleType {     //добавить ремонтный цех
     REPAIR_BAY         // ремонтный цех
 };
 
-// Перечисление типов ресурсов
 enum class ResourceType {
     OXYGEN,            // кислород
     WATER,             // вода
@@ -125,8 +116,6 @@ public:
     void setWeatherEffect(float modifier);  // 0.0 - 1.0
     float getEfficiency() const { return efficiency; }
 };
-
-
 // 3. Солнечная электростанция
 class SolarPowerPlant : public ColonyModule {
 private:
@@ -142,8 +131,6 @@ class NuclearPowerPlant : public ColonyModule {
 private:
     float baseProduction;
     double fuelAmount;
-
-
 double maxFuel;
     double fuelConsumptionRate;
 public:
@@ -211,5 +198,4 @@ public:
     const vector<Robot*>& getRobotsInRepairList() const { return robotsInRepair; } // Получить список роботов в ремонте
     void removeRobotFromRepair(Robot* robot);// Удалить робота из списка (когда ремонт завершён)
 };
-
 #endif //MYPROJECT_MODULES_H
