@@ -1,15 +1,7 @@
-//
-// Created by Вероника on 06.07.2026.
-//
 #include "colonist.h"
 #include <algorithm>  // для std::max, std::min
 using namespace std;
-
 class Colony;
-/*
- * Конструктор группы колонистов.
- * Инициализирует все поля начальными значениями.
- */
 ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int count,
                              ColonyModule* moduleptr, Task_type current_task,
                              double health, double fatigue,
@@ -36,11 +28,9 @@ ColonistGroup::ColonistGroup(string& group_id, Colonist_spec specialization, int
         opportunity_to_work = false;
     }
 }
-/*
- * Обновление здоровья колонистов.
- * Проверяет доступность ресурсов и уровень усталости.
+/* Обновление здоровья колонистов.Проверяет доступность ресурсов и уровень усталости.
  * Возвращает количество погибших (если здоровье упало до 0).
- */
+*/
 int ColonistGroup::update_health(const ResourcesAvailability& availability) {
     if (state == STATE_DEAD || count <= 0) return 0;
     double health_penalty = 0.0;
@@ -78,10 +68,7 @@ int ColonistGroup::update_health(const ResourcesAvailability& availability) {
     }
     return 0; // Погибших нет
 }
-/*
- * Обновление уровня усталости.
- * Усталость растёт во время работы и снижается во время отдыха.
- */
+// Обновление уровня усталости. Усталость растёт во время работы и снижается во время отдыха.
 bool ColonistGroup::update_fatigue(bool is_working) {
     if (state == STATE_DEAD || count <= 0) {
         return false;
@@ -90,7 +77,7 @@ bool ColonistGroup::update_fatigue(bool is_working) {
         // При работе усталость растёт (скорость зависит от состояния здоровья)
         double fatigue_increase = 3.0;
         if (health < 50) {
-            fatigue_increase = 5.0;  // Больной быстрее устаёт
+            fatigue_increase = 5.0;
         }
         fatigue = min(100.0, fatigue + fatigue_increase);
         // Если усталость достигла 100%, колонисты не могут работать
@@ -109,12 +96,8 @@ bool ColonistGroup::update_fatigue(bool is_working) {
     }
     return opportunity_to_work;
 }
-/*
- * Проверка возможности выполнения задачи.
- * Зависит от специализации колонистов.
- */
+// Проверка возможности выполнения задачи.
 bool ColonistGroup::can_perform_task(Task_type task) const {
-    // Если группа не может работать или мертва - не может выполнять задачи
     if (!opportunity_to_work || state == STATE_DEAD) {
         return false;
     }
@@ -140,10 +123,7 @@ bool ColonistGroup::can_perform_task(Task_type task) const {
             return false;
     }
 }
-/*
- * Получение общего потребления ресурсов группой.
- * Умножает норму потребления одного колониста на количество.
- */
+//Получение общего потребления ресурсов группой. Умножает норму потребления одного колониста на количество.
 Resources_consumption ColonistGroup::get_total_consumption() const {
     Resources_consumption total;
     total.oxygen = resources_consumption.oxygen * count;
@@ -151,9 +131,6 @@ Resources_consumption ColonistGroup::get_total_consumption() const {
     total.food = resources_consumption.food * count;
     return total;
 }
-/*
- * Добавление колонистов в группу.
- */
 void ColonistGroup::add_colonists(int amount) {
     if (amount > 0) {
         count += amount;
@@ -166,9 +143,6 @@ void ColonistGroup::add_colonists(int amount) {
         }
     }
 }
-/*
- * Удаление колонистов из группы (гибель).
- */
 void ColonistGroup::remove_colonists(int amount) {
     if (amount > 0) {
         count = max(0, count - amount);
