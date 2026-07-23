@@ -206,7 +206,7 @@ void Colony::createTransportNetwork(int totalRoutes) {
         double length = lengthDist(rng);
         auto route = make_shared<TransportRoute>(
             routes.size(), modules[j1].get(), modules[j2].get(), length); //указатель на объект класса пути
-        route->setCapacity(capacityDist(rng)); // случайная пропускная способность от 5 до 20
+        //route->setCapacity(capacityDist(rng)); // случайная пропускная способность от 5 до 20
         route->setState(RouteState::OPERATIONAL); // изначально все пути исправны и доступны колонистам и роботам
         route->setUsableByRobots(true);
         route->setUsableByColonists(true);
@@ -231,7 +231,7 @@ void Colony::createTransportNetwork(int totalRoutes) {
         auto route = make_shared<TransportRoute>(
             routes.size(), modules[module1].get(), modules[module2].get(), length);
         uniform_int_distribution<int> capacityDist(5, 20);
-        route->setCapacity(capacityDist(rng));
+        //route->setCapacity(capacityDist(rng));
         route->setState(RouteState::OPERATIONAL);
         route->setUsableByRobots(true);
         route->setUsableByColonists(true);
@@ -246,6 +246,7 @@ void Colony::createTransportNetwork(int totalRoutes) {
 
 // Основной шаг симуляции (один час)
 void Colony::tick() {
+    vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     // 1. ПРОИЗВОДСТВО РЕСУРСОВ (с проверкой наличия работников)
     for (const auto& mod : modules) {
         // Модуль должен работать
@@ -257,14 +258,14 @@ void Colony::tick() {
             if (group->get_state() == STATE_WORKING &&
                 group->get_count() > 0 &&
                 group->get_opportunity_to_work() &&
-                group->get_module_cur()==mod.get() &&
+                group->get_end_module()==mod.get() &&
                 mod->spec.find(group->get_specialization())!=mod->spec.end()) {
                 hasWorkersHere = true;
                 group->update_fatigue(true);
             }
         }
         for (const auto& rob : robots){
-            if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING && 
+            if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING &&
             rob->get_module() == mod.get()) {   // робот находится в этом модуле
                     hasWorkersHere = true;
                     break;
@@ -281,6 +282,8 @@ void Colony::tick() {
                     case ResourceType::OXYGEN: stats.oxygen_produced += amount; break;
                     case ResourceType::WATER: stats.water_produced += amount; break;
                     case ResourceType::ENERGY: stats.energy_produced += amount; break;
+                    case ResourceType::ORE: stats.ore_produced += amount; break;
+                    case ResourceType::FUEL: stats.fuel_produced += amount; break;
                     default: break;
                 }
             }
@@ -292,14 +295,14 @@ void Colony::tick() {
         bool hasWorkersHere = false;
         // Проверяем, есть ли в этом модуле группа колонистов, которая может работать
         for (const auto& group : colonistGroups) {
-            if (group->get_state() == STATE_WORKING && group->get_count() > 0 && group->get_opportunity_to_work() && group->get_module_cur()==mod.get() &&
+            if (group->get_state() == STATE_WORKING && group->get_count() > 0 && group->get_opportunity_to_work() && group->get_end_module()==mod.get() &&
                 mod->spec.find(group->get_specialization())!=mod->spec.end()) {
                 hasWorkersHere = true;
                 break;;
             }
         }
         for (const auto& rob : robots){
-            if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING && 
+            if (rob->get_type() == ROBOT_MINING && mod->getType() == ModuleType::MINE && rob->get_state() == ROBOT_STATE_WORKING &&
             rob->get_module() == mod.get()) {   // робот находится в этом модуле
                     hasWorkersHere = true;
                     break;
@@ -320,6 +323,7 @@ void Colony::tick() {
                     case ResourceType::OXYGEN: stats.oxygen_consumed += amount; break;
                     case ResourceType::WATER: stats.water_consumed += amount; break;
                     case ResourceType::ENERGY: stats.energy_consumed += amount; break;
+                    case ResourceType::FUEL: stats.fuel_consumed += amount; break;
                     default: break;
                 }
             }
@@ -347,7 +351,7 @@ void Colony::tick() {
     }
 
     // 3. генерация аварии(каждый час, шанс 3%)
-    if (rand() % 100 < 3) {
+    if (rand() % 100 < 30) {
         generateAccident();
     }
     // 4. Обновление активных аварий
@@ -357,7 +361,6 @@ void Colony::tick() {
     process_medical_modules();
 
     // 5. ПРОВЕРКА КРИТИЧЕСКИХ УРОВНЕЙ
-    vector<ResourceType> types = {ResourceType::OXYGEN, ResourceType::WATER, ResourceType::FOOD, ResourceType::ENERGY};
     for (ResourceType type : types) {
         Resource& res = resources.get_resource(type);
         if (res.isCritical()) {
@@ -450,13 +453,15 @@ void Colony::tick() {
         map<ModuleType, vector<ColonyModule*>> modulesByType;
         for (const auto& mod : modules) {
             if (!mod->isOperational()) continue;
-            if (mod->getType() == ModuleType::HABITAT) continue;
             jobOpenings[mod->getType()] += 1;
             modulesByType[mod->getType()].push_back(mod.get());
-            if(mod->getType() == ModuleType::MINE && rob_m>0){
-                Task mineTask(TASK_MINING, mod.get(), mod->getImportanceLevel(), 1.0, 10);
-                taskQueue.addTask(mineTask);
-                rob_m--;
+            if (mod->getType() == ModuleType::MINE && rob_m > 0) {
+            // Проверяем, есть ли уже задача для этой шахты в очереди
+                if (!taskQueue.has_task(mod.get())) {
+                    Task mineTask(TASK_MINING, mod.get(), mod->getImportanceLevel(), 1.0, 10);
+                    taskQueue.addTask(mineTask);
+                    rob_m--;
+                }
             }
         }
         // Проверяем все группы колонистов
@@ -468,7 +473,7 @@ void Colony::tick() {
             bool needsTransfer = false;
             // Сопоставляем специализацию с типом модуля
             // 1. ПРИОРИТЕТ 1: УСТАВШИЕ -> В ЖИЛОЙ МОДУЛЬ
-            if (group->get_fatigue() > 70 && group->get_state() == STATE_WORKING) {
+            if (group->get_fatigue() > 60 && group->get_module() != ModuleType::HABITAT) {
                 neededModuleType = ModuleType::HABITAT;
                 needsTransfer = true;
                 }
@@ -494,11 +499,11 @@ void Colony::tick() {
                             jobOpenings[ModuleType::REPAIR_BAY] > 0 ||
                             jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
                             if (jobOpenings[ModuleType::SOLAR_POWER] > 0) {
-                                neededModuleType = ModuleType::SOLAR_POWER;
+                                neededModuleType = ModuleType::WATER_RECYCLER;
+                            } else if (jobOpenings[ModuleType::SOLAR_POWER] > 0) {
+                                neededModuleType = ModuleType::REPAIR_BAY;
                             } else if (jobOpenings[ModuleType::REPAIR_BAY] > 0) {
                                 neededModuleType = ModuleType::REPAIR_BAY;
-                            } else if (jobOpenings[ModuleType::WATER_RECYCLER] > 0) {
-                                neededModuleType = ModuleType::WATER_RECYCLER;
                             } else {
                                 neededModuleType = ModuleType::NUCLEAR_POWER;
                             }
@@ -559,79 +564,80 @@ void Colony::tick() {
             Task currentTask = taskQueue.peek();
             if (!robot->can_perform_task(currentTask.getType())) continue;  // Этот робот не может выполнять такую задачу — пропускаем
             currentTask = taskQueue.getHighestPriority();// Теперь безопасно забираем задачу из очереди
+            cout << "Робот " << robot->get_id() << " взял задачу " << currentTask.getNameTarget() << endl;
             ColonyModule* targetMod = currentTask.getTargetModule();
             if (targetMod != nullptr && robot->assign_task(currentTask.getType(), currentTask.getComplexity(), weather)) {
                 // Находим группу, которую нужно везти к этому модулю
                 ColonistGroup* groupToTransport = nullptr;
                 if (robot->get_type() == ROBOT_CARGO && currentTask.getType() == TASK_CARGO) {
                     for (auto& group : colonistGroups) {
-                    if (group->get_module() != targetMod->getType() &&group->get_state() != STATE_DEAD &&group->get_transportRobot() == nullptr) {
-                        // Проверяем, подходит ли специализация
-                        bool matches = false;
-                        switch (group->get_specialization()) {
-                            case SPEC_MINER:
-                                matches = (targetMod->getType() == ModuleType::MINE);
+                        if (group->get_module() != targetMod->getType() &&group->get_state() != STATE_DEAD &&group->get_transportRobot() == nullptr) {
+                            // Проверяем, подходит ли специализация
+                            bool matches = false;
+                            switch (group->get_specialization()) {
+                                case SPEC_MINER:
+                                    matches = (targetMod->getType() == ModuleType::MINE);
+                                    break;
+                                case SPEC_BIOLOGIST:
+                                    matches = (targetMod->getType() == ModuleType::GREENHOUSE);
+                                    break;
+                                case SPEC_ENGINEER:
+                                case SPEC_TECHNICIAN:
+                                    matches = (targetMod->getType() == ModuleType::REPAIR_BAY ||
+                                              targetMod->getType() == ModuleType::SOLAR_POWER ||
+                                              targetMod->getType() == ModuleType::NUCLEAR_POWER ||
+                                              targetMod->getType() == ModuleType::WATER_RECYCLER);
+                                    break;
+                                case SPEC_DOCTOR:
+                                    matches = (targetMod->getType() == ModuleType::MEDICAL);
+                                    break;
+                                case SPEC_ENERGY_OPERATOR:
+                                    matches = (targetMod->getType() == ModuleType::SOLAR_POWER ||
+                                              targetMod->getType() == ModuleType::NUCLEAR_POWER);
+                                    break;
+                                case SPEC_REGULAR:
+                                    matches = (targetMod->getType() == ModuleType::MINE ||
+                                              targetMod->getType() == ModuleType::GREENHOUSE);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            if (matches) {
+                                groupToTransport = group.get();
                                 break;
-                            case SPEC_BIOLOGIST:
-                                matches = (targetMod->getType() == ModuleType::GREENHOUSE);
-                                break;
-                            case SPEC_ENGINEER:
-                            case SPEC_TECHNICIAN:
-                                matches = (targetMod->getType() == ModuleType::REPAIR_BAY ||
-                                          targetMod->getType() == ModuleType::SOLAR_POWER ||
-                                          targetMod->getType() == ModuleType::NUCLEAR_POWER ||
-                                          targetMod->getType() == ModuleType::WATER_RECYCLER);
-                                break;
-                            case SPEC_DOCTOR:
-                                matches = (targetMod->getType() == ModuleType::MEDICAL);
-                                break;
-                            case SPEC_ENERGY_OPERATOR:
-                                matches = (targetMod->getType() == ModuleType::SOLAR_POWER ||
-                                          targetMod->getType() == ModuleType::NUCLEAR_POWER);
-                                break;
-                            case SPEC_REGULAR:
-                                matches = (targetMod->getType() == ModuleType::MINE ||
-                                          targetMod->getType() == ModuleType::GREENHOUSE);
-                                break;
-                            default:
-                                break;
-                        }
-                    if (matches) {
-                            groupToTransport = group.get();
-                            break;
+                            }
                         }
                     }
                 }
-            }
-            else if ((currentTask.getType() == TASK_REPAIR || currentTask.getType() == TASK_EMERGENCY) && robot->get_type() == ROBOT_REPAIR) {
-                cout << "Ремонтный робот " << robot->get_id() << " направлен чинить модуль " << targetMod->getName() << endl;
-                targetMod->setState(ModuleState::UNDER_REPAIR);
-            }
-            else if (currentTask.getType() == TASK_MINING && robot->get_type() == ROBOT_MINING) {
-                cout << "Добывающий робот " << robot->get_id() << " направлен добывать в модуль " << targetMod->getName() << endl;
-            }
-            // Робот назначил задачу. Теперь ищем путь!
-            vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
-            if (!path.empty()) {
-                robot->setRoute(path, targetMod);
-                if (groupToTransport) {
-                    robot->setPassengers(groupToTransport);
-                    groupToTransport->set_transportRobot(robot.get());
-                    groupToTransport->set_state(STATE_MOVING);
-                    groupToTransport->set_opportunity_to_work(false);
-                    cout << "Группа " << groupToTransport->get_group_id() << " села в робота " << robot->get_id() << endl;
+                else if ((currentTask.getType() == TASK_REPAIR || currentTask.getType() == TASK_EMERGENCY) && robot->get_type() == ROBOT_REPAIR) {
+                    cout << "Ремонтный робот " << robot->get_id() << " направлен чинить модуль " << targetMod->getName() << endl;
+                    targetMod->setState(ModuleState::UNDER_REPAIR);
                 }
-                cout << "Робот " << robot->get_id() << " начал движение к " << targetMod->getName() << endl;
-            }
-            else {
-                cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
-                robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // возвращаем в ожидание
+                else if (currentTask.getType() == TASK_MINING && robot->get_type() == ROBOT_MINING) {
+                cout << "Добывающий робот " << robot->get_id() << " направлен добывать в модуль " << targetMod->getName() << endl;
+                }
+                // Робот назначил задачу. Теперь ищем путь!
+                vector<int> path = findShortestPath(robot->get_module()->getId(), targetMod->getId(), *robot, weather);
+                if (!path.empty()) {
+                    robot->setRoute(path, targetMod);
+                    if (groupToTransport) {
+                        robot->setPassengers(groupToTransport);
+                        groupToTransport->set_transportRobot(robot.get());
+                        groupToTransport->set_state(STATE_MOVING);
+                        groupToTransport->set_opportunity_to_work(false);
+                        cout << "Группа " << groupToTransport->get_group_id() << " села в робота " << robot->get_id() << endl;
+                    }
+                    cout << "Робот " << robot->get_id() << " начал движение к " << targetMod->getName() << endl;
+                }
+                else {
+                    cout << "Робот " << robot->get_id() << " не может найти путь!" << endl;
+                    robot->set_state(ROBOT_STATE_WAITING_FOR_TASK); // возвращаем в ожидание
+                }
             }
         }
     }
-}
 
-// 8 ДВИЖЕНИЕ РОБОТОВ
+    // 8 ДВИЖЕНИЕ РОБОТОВ
     for (auto& robot : robots) {
         if (robot->get_state() != ROBOT_STATE_MOVING) continue;
         ColonyModule* currentTarget = robot->getTargetModule();
@@ -702,11 +708,50 @@ void Colony::tick() {
 
     update_statistics();
 
-    currentHour++; // Увеличиваем счётчик часов
+    int damaged = 0, destroyed = 0;
+    for (const auto& mod : modules) {
+        if (mod->getState() == ModuleState::DAMAGED) damaged++;
+        if (mod->getState() == ModuleState::DESTROYED) destroyed++;
+    }
+    stats.damaged_modules = damaged;
+    stats.destroyed_modules = destroyed;
+
+    stats.sum_oxygen += resources.get_resource(ResourceType::OXYGEN).getCurrentAmount();
+    stats.sum_water += resources.get_resource(ResourceType::WATER).getCurrentAmount();
+    stats.sum_food += resources.get_resource(ResourceType::FOOD).getCurrentAmount();
+    stats.sum_energy += resources.get_resource(ResourceType::ENERGY).getCurrentAmount();
+
+    bool criticalToday = false;
+    for (auto type : types) {
+        if (resources.get_resource(type).isCritical()) {
+            criticalToday = true;
+            break;
+        }
+    }
+    if (criticalToday) stats.days_with_critical++;
+
+    double totalHealth = 0.0;
+    int groupCount = 0;
+    for (const auto& group : colonistGroups) {
+        if (group->get_count() > 0) {
+            totalHealth += group->get_health();
+            groupCount++;
+        }
+    }
+    if (groupCount > 0) stats.avg_colonist_health = totalHealth / groupCount;
+
+    int broken = 0;
+    for (const auto& r : robots) {
+        if (r->get_state() == ROBOT_STATE_DESTROYED || r->get_state() == ROBOT_STATE_DAMAGED)
+            broken++;
+    }
+    stats.broken_robots = broken;
+
+    currentHour++;
 }
 // Запуск цикла симуляции на несколько дней
 void Colony::run(){
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 7; i++) {
         weather.rand_weather();
         currentHour = 0;
         cout << "--- День " << (i + 1) << " ---" << endl;
@@ -716,82 +761,113 @@ void Colony::run(){
         for (int hour = 0; hour < 24; hour++) {
             tick();
         }
+        int total_alive = 0;
+        for (const auto& group : colonistGroups) {
+            if (group->get_state() != STATE_DEAD && group->get_count() > 0)
+                total_alive += group->get_count();
+        }
+        if (total_alive == 0) {
+            cout << "Все колонисты погибли на день " << (i+1) << ". Симуляция остановлена.\n";
+            break;
+        }
     }
     print_statistics();
     save_statistics("statistics.txt");
 }
 
 void Colony::generateAccident() {
-    // Выбираем случайный модуль
     uniform_int_distribution<int> modDist(0, modules.size() - 1);
     int modIndex = modDist(rng);
-    ColonyModule* targetModule = modules[modIndex].get();
-    // Генерируем аварию (шанс уже проверили выше, поэтому probability = 100)
-    Accident* accident = Accident_generator::generate_accident( weather, 100, targetModule);
-    if (accident) {
-        accident->apply_effect(targetModule, resources, colonistGroups, routes); // Применяем эффекты (урон модулю, потеря ресурсов)
-        activeAccidents.push_back(accident); // Добавляем в список активных
-        stats.total_accidents++;
-        cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
-        if (accident->get_type() == Accident_type::Illness) {
-            MedicalModule* medModule = nullptr;
-            for (auto& mod : modules) {
-                if (mod->getType() == ModuleType::MEDICAL) {
-                    medModule = dynamic_cast<MedicalModule*>(mod.get());
-                    break;
-                }
-            }
-            if (medModule) {
-                for (auto& group : colonistGroups) {
-                    if (group->get_state() == STATE_TREATMENT && group->get_health() < 30 && group->get_count() > 0 && group->get_end_module() != medModule) {
-                            if (!group->get_start_module()) {
-                                group->set_start_module(group->get_end_module());
-                            }
-                        group->move_to_module(medModule);
-                        medModule->add_patient(group);
-                        cout << "Группа " << group->get_group_id() << " направлена в медблок." << endl;
-                        }
-                    }
-            } else {
-                cout << "Нет медицинского модуля для лечения!" << endl;
+    ColonyModule* originalModule = modules[modIndex].get();
+
+    Accident* accident = Accident_generator::generate_accident(weather, 100, nullptr);
+
+    if (!accident) return;
+
+    ColonyModule* targetModule = originalModule;
+
+    if (accident->get_type() == Accident_type::Break_solar_panel) {
+        vector<ColonyModule*> solarModules;
+        for (const auto& mod : modules) {
+            if (mod->getType() == ModuleType::SOLAR_POWER) {
+                solarModules.push_back(mod.get());
             }
         }
 
-        // Создаём задачу на ремонт
-        Task_type taskType = TASK_REPAIR;
-        switch (accident->get_type()) {
-            case Accident_type::Oxyden_leakege:
-            case Accident_type::Brake_water_system:
-                taskType = TASK_EMERGENCY;
+        if (solarModules.empty()) {
+            delete accident;
+            return;
+        }
+
+        uniform_int_distribution<int> solarDist(0, solarModules.size() - 1);
+        targetModule = solarModules[solarDist(rng)];
+    }
+
+    accident->apply_effect(targetModule, resources, colonistGroups, routes);
+    activeAccidents.push_back(accident);
+    stats.total_accidents++;
+
+    cout << "Час " << currentHour << ": АВАРИЯ! " << accident->get_aftereffect() << endl;
+
+    if (accident->get_type() == Accident_type::Illness) {
+        MedicalModule* medModule = nullptr;
+        for (auto& mod : modules) {
+            if (mod->getType() == ModuleType::MEDICAL) {
+                medModule = dynamic_cast<MedicalModule*>(mod.get());
                 break;
-            case Accident_type::Illness:
-                taskType = TASK_MEDICAL;
-                break;
-            case Accident_type::Damage_transition: {
-                TransportRoute* targetRoute = nullptr;
-                for (auto& route : routes) {
-                    if (route->getState() == RouteState::DAMAGED) {
-                        targetRoute = route.get();
-                        break;
+            }
+        }
+        if (medModule) {
+            for (auto& group : colonistGroups) {
+                if (group->get_state() == STATE_TREATMENT && group->get_health() < 30 &&
+                    group->get_count() > 0 && group->get_end_module() != medModule) {
+                    if (!group->get_start_module()) {
+                        group->set_start_module(group->get_end_module());
                     }
-                }
-                if (targetRoute) {
-                    int importance = targetRoute->getMaxHealth() - targetRoute->getCurrentHealth();
-                    double damageLevel = accident->get_force() / 10.0;
-                    Task repairRouteTask(TASK_REPAIR, targetRoute, importance, damageLevel, accident->get_force());
-                    taskQueue.addTask(repairRouteTask);
-                    stats.total_repairs++;
-                    cout << "Создана задача на ремонт перехода " << targetRoute->getId() << endl;
+                    group->move_to_module(medModule);
+                    medModule->add_patient(group);
+                    cout << "Группа " << group->get_group_id() << " направлена в медблок." << endl;
                 }
             }
+        } else {
+            cout << "Нет медицинского модуля для лечения!" << endl;
+        }
+    }
+
+    // 8. Создание задачи на ремонт (используем targetModule)
+    Task_type taskType = TASK_REPAIR;
+    switch (accident->get_type()) {
+        case Accident_type::Oxyden_leakege:
+        case Accident_type::Brake_water_system:
+            taskType = TASK_EMERGENCY;
             break;
-            default: {
-                int moduleImportance = targetModule->getImportanceLevel();
-                double damageLevel = accident->get_force() / 10.0;
-                Task task(taskType, targetModule, moduleImportance, damageLevel, accident->get_force());
-                taskQueue.addTask(task);
-                stats.total_repairs++;
+        case Accident_type::Illness:
+            taskType = TASK_MEDICAL;
+            break;
+        case Accident_type::Damage_transition: {
+            TransportRoute* targetRoute = nullptr;
+            for (auto& route : routes) {
+                if (route->getState() == RouteState::DAMAGED) {
+                    targetRoute = route.get();
+                    break;
+                }
             }
+            if (targetRoute) {
+                int importance = targetRoute->getMaxHealth() - targetRoute->getCurrentHealth();
+                double damageLevel = accident->get_force() / 10.0;
+                Task repairRouteTask(TASK_REPAIR, targetRoute, importance, damageLevel, accident->get_force());
+                taskQueue.addTask(repairRouteTask);
+                stats.total_repairs++;
+                cout << "Создана задача на ремонт перехода " << targetRoute->getId() << endl;
+                }
+            break;
+        }
+        default: {
+            int moduleImportance = targetModule->getImportanceLevel();
+            double damageLevel = accident->get_force() / 10.0;
+            Task task(taskType, targetModule, moduleImportance, damageLevel, accident->get_force());
+            taskQueue.addTask(task);
+            stats.total_repairs++;
             break;
         }
     }
@@ -804,6 +880,8 @@ void Colony::updateActiveAccidents() {
         acc->update();// Вызываем update() — он уменьшает time_to_end на 1
         // Проверяем, завершилась ли авария
         if (!acc->isActive()) {
+            stats.accidents_resolved++;
+            stats.total_repair_time += acc->get_duration();
             delete acc;  // Освобождаем память!
             it = activeAccidents.erase(it);  // Удаляем элемент из вектора
         } else {
@@ -958,7 +1036,7 @@ void Colony::export_dot(const string& file_name) const{
     out << "digraph Colony {" << endl;
     out << "    node [shape=box, style=filled, fillcolor=lightblue];" << endl;
     for (const auto& mod : modules) {
-        out << "    " << mod->getId() << " [label=\"" << mod->getName() << "\\n" << "HP: " << mod->getCurrentHealth() << "/" << mod->getMaxHealth() << "\"];" << endl;
+        out << "    " << mod->getId() << " [label=\"ID: " << mod->getId() << "\\n" << mod->getName() << "\\n" << "HP: " << mod->getCurrentHealth() << "/" << mod->getMaxHealth() << "\"];" << endl;
     }
     for (const auto& route : routes) {
         out << "    " << route->getStartModule()->getId() << " -> "
@@ -1038,12 +1116,45 @@ void Colony::print_statistics() const {
     cout << "Количество произведенного кислорода: " << stats.oxygen_produced << endl;
     cout << "Количество произведенной воды: " << stats.water_produced << endl;
     cout << "Количество произведенной энергии: " << stats.energy_produced << endl;
+    cout << "Количество добытой руды: " << stats.ore_produced << endl;
+    cout << "Количество добытого топлева: " << stats.fuel_produced << endl;
     cout << "\n========== ПОТРЕБЛЕНИЕ РЕСУРСОВ ==========\n";
     cout << "Количество потребленной пищи: " << stats.food_consumed << endl;
     cout << "Количество потребленного кислорода: " << stats.oxygen_consumed << endl;
     cout << "Количество потребленной воды: " << stats.water_consumed << endl;
     cout << "Количество потребленной энергии: " << stats.energy_consumed << endl;
+    cout << "Количество использованного топлева: " << stats.fuel_consumed << endl;
     cout << "============================================\n";
+    double avgOxygen = (stats.total_hours > 0) ? stats.sum_oxygen / stats.total_hours : 0;
+    double avgWater  = (stats.total_hours > 0) ? stats.sum_water / stats.total_hours : 0;
+    double avgFood   = (stats.total_hours > 0) ? stats.sum_food / stats.total_hours : 0;
+    double avgEnergy = (stats.total_hours > 0) ? stats.sum_energy / stats.total_hours : 0;
+    double avgRepairTime = (stats.accidents_resolved > 0) ? stats.total_repair_time / stats.accidents_resolved : 0;
+    cout << "\n========== ДОПОЛНИТЕЛЬНАЯ СТАТИСТИКА ==========\n";
+    cout << "Повреждённых модулей: " << stats.damaged_modules << endl;
+    cout << "Разрушенных модулей: " << stats.destroyed_modules << endl;
+    cout << "Среднее время устранения аварий: " << avgRepairTime << " часов" << endl;
+    cout << "Часов с критическим дефицитом ресурсов: " << stats.days_with_critical << endl;
+    cout << "Роботов, вышедших из строя: " << stats.broken_robots << endl;
+    cout << "Среднее здоровье колонистов: " << stats.avg_colonist_health << "%" << endl;
+    cout << "\n========== СРЕДНИЕ ЗАПАСЫ РЕСУРСОВ (за час) ==========\n";
+    cout << "Кислород: " << avgOxygen << endl;
+    cout << "Вода: " << avgWater << endl;
+    cout << "Пища: " << avgFood << endl;
+    cout << "Энергия: " << avgEnergy << endl;
+    double viability = 0.0;
+    double maxHealth = 100.0;
+    double currentHealth = stats.avg_modules_health;
+    double colonistsRatio = (stats.initial_colonists > 0) ? (double)stats.current_colonists / stats.initial_colonists : 0;
+    double resourceRatio = (avgOxygen / 1000 + avgWater / 800 + avgFood / 600 + avgEnergy / 500) / 4.0;
+    if (resourceRatio > 1.0) resourceRatio = 1.0;
+    viability = (currentHealth / maxHealth + colonistsRatio + resourceRatio) / 3.0 * 100.0;
+    cout << "\n========== ЖИЗНЕСПОСОБНОСТЬ КОЛОНИИ ==========\n";
+    cout << "Показатель жизнеспособности: " << viability << "%" << endl;
+    if (viability > 80) cout << "Состояние: Процветает" << endl;
+    else if (viability > 50) cout << "Состояние: Устойчивое" << endl;
+    else if (viability > 30) cout << "Состояние: На грани" << endl;
+    else cout << "Состояние: Критическое" << endl;
 }
 
 
@@ -1070,8 +1181,38 @@ void Colony::save_statistics(const string& file_name) const {
     out << "Количество потребленного кислорода: " << stats.oxygen_consumed << endl;
     out << "Количество потребленной воды: " << stats.water_consumed << endl;
     out << "Количество потребленной энергии: " << stats.energy_consumed << endl;
+    out << "Повреждённых модулей: " << stats.damaged_modules << endl;
+    out << "Разрушенных модулей: " << stats.destroyed_modules << endl;
+    out << "Количество завершённых аварий: " << stats.accidents_resolved << endl;
+    double avgRepairTime = (stats.accidents_resolved > 0) ? stats.total_repair_time / stats.accidents_resolved : 0.0;
+    out << "Среднее время устранения аварий: " << avgRepairTime << " часов" << endl;
+    out << "Часов с критическим дефицитом ресурсов: " << stats.days_with_critical << endl;
+    out << "Роботов, вышедших из строя: " << stats.broken_robots << endl;
+    out << "Среднее здоровье колонистов: " << stats.avg_colonist_health << "%" << endl;
+    double avgOxygen = (stats.total_hours > 0) ? stats.sum_oxygen / stats.total_hours : 0;
+    double avgWater  = (stats.total_hours > 0) ? stats.sum_water / stats.total_hours : 0;
+    double avgFood   = (stats.total_hours > 0) ? stats.sum_food / stats.total_hours : 0;
+    double avgEnergy = (stats.total_hours > 0) ? stats.sum_energy / stats.total_hours : 0;
+    out << "Средний запас кислорода: " << avgOxygen << endl;
+    out << "Средний запас воды: " << avgWater << endl;
+    out << "Средний запас пищи: " << avgFood << endl;
+    out << "Средний запас энергии: " << avgEnergy << endl;
+    double viability = 0.0;
+    double maxHealth = 100.0;
+    double currentHealth = stats.avg_modules_health;
+    double colonistsRatio = (stats.initial_colonists > 0) ? (double)stats.current_colonists / stats.initial_colonists : 0;
+    double resourceRatio = (avgOxygen / 1000 + avgWater / 800 + avgFood / 600 + avgEnergy / 500) / 4.0;
+    if (resourceRatio > 1.0) resourceRatio = 1.0;
+    viability = (currentHealth / maxHealth + colonistsRatio + resourceRatio) / 3.0 * 100.0;
+    out << "Показатель жизнеспособности: " << viability << "%" << endl;
+    if (viability > 80) out << "Итоговое состояние колонии: Процветает" << endl;
+    else if (viability > 50) out << "Итоговое состояние колонии: Устойчивое" << endl;
+    else if (viability > 30) out << "Итоговое состояние колонии: На грани" << endl;
+    else out << "Итоговое состояние колонии: Критическое" << endl;
+
     out.close();
     cout << "Статистика сохранена в " << file_name << endl;
+
 }
 
 // ==================== АЛГОРИТМ ДЕЙКСТРЫ ====================
